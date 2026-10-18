@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mira & KnowNext — Smart Workspace + Learning Community</title>
+  <meta name="description" content="Mira organizes your workspace — attendance, PDFs, meetings and more. KnowNext is the community where students and teachers solve problems together." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ══════════════════════════════════════════════════════════════════
+       RESET & TOKENS
+    ══════════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #FFFFEB;
+      --green:      #034F46;
+      --green-light:#0A7060;
+      --black:      #1A1A1A;
+      --black70:    rgba(26,26,26,.70);
+      --black40:    rgba(26,26,26,.40);
+      --black10:    rgba(26,26,26,.08);
+      --purple:     #5B4BFF;
+      --purple-bg:  #F0EEFF;
+      --radius-lg:  1.5rem;
+      --radius-pill:100px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Figtree', sans-serif;
+      background: var(--cream);
+      color: var(--black);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       ANNOUNCEMENT BANNER
+    ══════════════════════════════════════════════════════════════════ */
+    .banner {
+      background: var(--green);
+      color: var(--cream);
+      text-align: center;
+      padding: .6rem 1.5rem;
+      font-size: .8125rem;
+      font-weight: 500;
+      letter-spacing: .01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .6rem;
+    }
+    .banner strong { font-weight: 700; }
+    .banner a {
+      color: var(--cream);
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      transition: opacity .2s;
+      cursor: pointer;
+    }
+    .banner a:hover { opacity: .75; }
+
+    /* ══════════════════════════════════════════════════════════════════
+       NAVBAR
+    ══════════════════════════════════════════════════════════════════ */
+    .nav-sticky {
+      position: sticky;
+      top: 0;
+      z-index: 300;
+    }
+    .nav-bar {
+      background: rgba(255,255,235,.9);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(26,26,26,.09);
+      padding: 0 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 4rem;
+    }
+
+    /* ── brand ── */
+    .nav-brand { display: flex; align-items: center; gap: 1.25rem; text-decoration: none; }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .brand-logo {
+      height: 2rem;
+      width: auto;
+      object-fit: contain;
+    }
+    .brand-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--black);
+      letter-spacing: -.01em;
+    }
+    .brand-sep {
+      width: 1px;
+      height: 1.5rem;
+      background: var(--black40);
+      border-radius: 1px;
+    }
+
+    /* ── links ── */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+    @media (max-width: 820px) { .nav-links { display: none; } }
+
+    .nav-links a {
+      font-size: .9rem;
+      font-weight: 500;
+      color: var(--black70);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--black); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* ── cta ── */
+    .nav-signin {
+      background: transparent;
+      border: 1px solid rgba(26,26,26,.2);
+      color: var(--black);
+      font-size: .875rem;
+      font-weight: 600;
+      padding: .5rem 1.1rem;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .nav-signin:hover {
+      border-color: var(--black);
+      background: rgba(26,26,26,.05);
+    }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: var(--black);
+      color: var(--cream);
+      font-size: .875rem;
+      font-weight: 600;
+      padding: .55rem 1.35rem;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      transition: background .2s, transform .15s;
+      white-space: nowrap;
+      cursor: pointer;
+      border: none;
+    }
+    .nav-cta:hover { background: var(--green); transform: translateY(-1px); }
+
+    .nav-signout-btn {
+      display: none;
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #DC2626;
+      font-size: .8rem;
+      font-weight: 600;
+      padding: .45rem .85rem;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .nav-signout-btn:hover {
+      background: #FEE2E2;
+      border-color: #DC2626;
+    }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .nav-hamburger span {
+      display: block; width: 22px; height: 2px;
+      background: var(--black); border-radius: 2px;
+    }
+    @media (max-width: 820px) { .nav-hamburger { display: flex; } }
+
+    /* ══════════════════════════════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════════════════════════════ */
+    .hero {
+      padding: 6.5rem 1.5rem 0;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--black70);
+      border: 1px solid rgba(26,26,26,.2);
+      border-radius: var(--radius-pill);
+      padding: .35rem 1rem;
+      margin-bottom: 2rem;
+    }
+    .eyebrow-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .hero-h1 {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(3rem, 8vw, 5.75rem);
+      font-weight: 400;
+      line-height: 1.07;
+      letter-spacing: -.025em;
+      color: var(--black);
+      margin-bottom: 1.75rem;
+    }
+    .hero-h1 em {
+      font-style: italic;
+      color: var(--green);
+    }
+
+    .hero-sub {
+      font-size: clamp(.95rem, 2vw, 1.2rem);
+      color: var(--black70);
+      max-width: 42rem;
+      margin: 0 auto 2.75rem;
+      line-height: 1.65;
+    }
+
+    /* CTA group */
+    .hero-cta-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--black);
+      color: var(--cream);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: .9rem 2.25rem;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 24px rgba(26,26,26,.2);
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary:hover {
+      background: var(--green);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(3,79,70,.28);
+    }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--black);
+      text-decoration: none;
+      padding: .9rem 1.75rem;
+      border-radius: var(--radius-pill);
+      border: 1.5px solid rgba(26,26,26,.25);
+      transition: border-color .2s, background .2s;
+    }
+    .btn-outline:hover {
+      border-color: var(--black);
+      background: var(--black10);
+    }
+
+    .hero-note {
+      font-size: .8rem;
+      color: var(--black40);
+      margin-bottom: 5rem;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       HERO CARD (dark showcase area)
+    ══════════════════════════════════════════════════════════════════ */
+    .hero-card-wrap {
+      position: relative;
+      max-width: 68rem;
+      margin: 0 auto;
+    }
+
+    .wave-side {
+      position: absolute;
+      top: 0;
+      width: 48%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .wave-side.left  { left: -4%; }
+    .wave-side.right { right: -4%; }
+
+    .hero-dark-card {
+      position: relative;
+      z-index: 2;
+      background: var(--black);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      overflow: hidden;
+      padding: 2.5rem 2rem 0;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 640px) { .preview-grid { grid-template-columns: 1fr; } }
+
+    .preview-pane {
+      background: rgba(255,255,235,.06);
+      border: 1px solid rgba(255,255,235,.11);
+      border-radius: 1rem 1rem 0 0;
+      overflow: hidden;
+    }
+
+    .pane-header {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      padding: .85rem 1.1rem;
+      border-bottom: 1px solid rgba(255,255,235,.08);
+    }
+    .pane-icon {
+      width: 28px; height: 28px;
+      border-radius: .5rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .pane-icon.mira-icon  { background: rgba(10,112,96,.35); }
+    .pane-icon.kn-icon    { background: rgba(91,75,255,.3); }
+
+    .pane-title {
+      font-size: .8125rem;
+      font-weight: 700;
+      color: var(--cream);
+      letter-spacing: .02em;
+    }
+    .pane-subtitle {
+      font-size: .7rem;
+      color: rgba(255,255,235,.4);
+      font-weight: 500;
+    }
+
+    .pane-body { padding: 1rem 1.1rem 1.25rem; }
+
+    .feature-row {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      padding: .55rem 0;
+      border-bottom: 1px solid rgba(255,255,235,.06);
+    }
+    .feature-row:last-child { border-bottom: none; }
+
+    .feature-row-icon {
+      width: 30px; height: 30px;
+      background: rgba(255,255,235,.07);
+      border-radius: .5rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem;
+      flex-shrink: 0;
+    }
+    .feature-row-text { flex: 1; }
+    .feature-row-label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--cream);
+    }
+    .feature-row-desc {
+      font-size: .7rem;
+      color: rgba(255,255,235,.45);
+      margin-top: .1rem;
+    }
+    .feature-row-badge {
+      font-size: .65rem;
+      font-weight: 700;
+      background: rgba(10,112,96,.5);
+      color: #9EFFC5;
+      border-radius: 100px;
+      padding: .15rem .55rem;
+      white-space: nowrap;
+    }
+
+    .thread-item {
+      background: rgba(255,255,235,.05);
+      border: 1px solid rgba(255,255,235,.08);
+      border-radius: .75rem;
+      padding: .7rem .85rem;
+      margin-bottom: .65rem;
+    }
+    .thread-item:last-child { margin-bottom: 0; }
+
+    .thread-meta {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      margin-bottom: .4rem;
+    }
+    .thread-avatar {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .av-s { background: #5B4BFF; color: #fff; }
+    .av-t { background: #0A7060; color: #fff; }
+
+    .thread-author {
+      font-size: .72rem;
+      font-weight: 600;
+      color: rgba(255,255,235,.7);
+    }
+    .thread-role-tag {
+      font-size: .6rem;
+      font-weight: 700;
+      padding: .1rem .4rem;
+      border-radius: 100px;
+      margin-left: auto;
+    }
+    .tag-student  { background: rgba(91,75,255,.25); color: #A89DFF; }
+    .tag-teacher  { background: rgba(10,112,96,.35); color: #9EFFC5; }
+
+    .thread-q {
+      font-size: .775rem;
+      color: var(--cream);
+      font-weight: 500;
+      line-height: 1.4;
+      margin-bottom: .35rem;
+    }
+    .thread-answers {
+      font-size: .68rem;
+      color: rgba(255,255,235,.35);
+    }
+    .thread-answers strong { color: rgba(255,255,235,.6); }
+
+    /* ══════════════════════════════════════════════════════════════════
+       PRODUCT SECTIONS
+    ══════════════════════════════════════════════════════════════════ */
+    .products-section { padding: 6rem 1.5rem; }
+
+    .section-label {
+      text-align: center;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--black40);
+      margin-bottom: 3.5rem;
+    }
+
+    .product-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      max-width: 72rem;
+      margin: 0 auto 1.5rem;
+    }
+    @media (max-width: 820px) { .product-row { grid-template-columns: 1fr; } }
+
+    .product-card {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      padding: 2.75rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .product-card.mira-card {
+      background: var(--black);
+      color: var(--cream);
+    }
+    .product-card.kn-card {
+      background: var(--purple-bg);
+      color: var(--black);
+      border: 1px solid rgba(91,75,255,.15);
+    }
+
+    .pc-logo-row {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+    }
+    .pc-logo {
+      height: 2.25rem;
+      width: auto;
+      object-fit: contain;
+    }
+    .mira-card .pc-logo { filter: brightness(10); }
+
+    .pc-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -.01em;
+    }
+    .mira-card .pc-name { color: var(--cream); }
+    .kn-card   .pc-name { color: var(--black); }
+
+    .pc-tagline {
+      font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+      font-family: 'EB Garamond', serif;
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: -.02em;
+    }
+    .mira-card .pc-tagline { color: var(--cream); }
+    .kn-card   .pc-tagline { color: var(--black); }
+    .pc-tagline em { font-style: italic; }
+    .mira-card .pc-tagline em { color: #9EFFC5; }
+    .kn-card   .pc-tagline em { color: var(--purple); }
+
+    .pc-desc {
+      font-size: .95rem;
+      line-height: 1.65;
+      opacity: .72;
+    }
+
+    .pc-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      font-size: .8rem;
+      font-weight: 600;
+      padding: .35rem .85rem;
+      border-radius: var(--radius-pill);
+    }
+    .mira-card .chip {
+      background: rgba(255,255,235,.1);
+      color: rgba(255,255,235,.85);
+      border: 1px solid rgba(255,255,235,.14);
+    }
+    .kn-card .chip {
+      background: rgba(91,75,255,.1);
+      color: var(--purple);
+      border: 1px solid rgba(91,75,255,.18);
+    }
+
+    .pc-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .9rem;
+      font-weight: 700;
+      padding: .7rem 1.6rem;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      align-self: flex-start;
+      transition: transform .15s, box-shadow .2s;
+      cursor: pointer;
+      border: none;
+    }
+    .mira-card .pc-cta {
+      background: var(--cream);
+      color: var(--black);
+      box-shadow: 0 4px 20px rgba(255,255,235,.15);
+    }
+    .mira-card .pc-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,255,235,.25); }
+
+    .kn-card .pc-cta {
+      background: var(--purple);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(91,75,255,.25);
+    }
+    .kn-card .pc-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(91,75,255,.35); }
+
+    /* ══════════════════════════════════════════════════════════════════
+       MIRA FEATURE GRID
+    ══════════════════════════════════════════════════════════════════ */
+    .features-detail { padding: 0 1.5rem 6rem; }
+    .features-detail-inner { max-width: 72rem; margin: 0 auto; }
+
+    .section-heading {
+      text-align: center;
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 400;
+      letter-spacing: -.02em;
+      line-height: 1.15;
+      margin-bottom: .75rem;
+    }
+    .section-heading em { font-style: italic; color: var(--green); }
+
+    .section-sub {
+      text-align: center;
+      font-size: 1rem;
+      color: var(--black70);
+      margin-bottom: 3rem;
+      max-width: 36rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 820px) { .feat-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px)  { .feat-grid { grid-template-columns: 1fr; } }
+
+    .feat-card {
+      background: var(--black10);
+      border: 1px solid rgba(26,26,26,.07);
+      border-radius: 1.125rem;
+      padding: 1.75rem 1.5rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .feat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(26,26,26,.09); }
+
+    .feat-card-emoji { font-size: 1.75rem; margin-bottom: 1rem; display: block; }
+    .feat-card-title { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
+    .feat-card-desc { font-size: .875rem; color: var(--black70); line-height: 1.6; }
+
+    /* ══════════════════════════════════════════════════════════════════
+       KNOWNEXT COMMUNITY SECTION
+    ══════════════════════════════════════════════════════════════════ */
+    .community-section {
+      background: var(--purple-bg);
+      padding: 6rem 1.5rem;
+      border-top: 1px solid rgba(91,75,255,.1);
+      border-bottom: 1px solid rgba(91,75,255,.1);
+    }
+
+    .community-inner { max-width: 72rem; margin: 0 auto; }
+    .community-heading { color: var(--black); }
+    .community-heading em { color: var(--purple); }
+
+    .community-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-top: 3rem;
+    }
+    @media (max-width: 820px) { .community-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 520px)  { .community-grid { grid-template-columns: 1fr; } }
+
+    .comm-card {
+      background: #fff;
+      border: 1px solid rgba(91,75,255,.12);
+      border-radius: 1.125rem;
+      padding: 1.75rem 1.5rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .comm-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(91,75,255,.12); }
+
+    .comm-card-emoji { font-size: 1.75rem; margin-bottom: 1rem; display: block; }
+    .comm-card-title { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
+    .comm-card-desc  { font-size: .875rem; color: var(--black70); line-height: 1.6; }
+
+    /* ══════════════════════════════════════════════════════════════════
+       HOW IT WORKS
+    ══════════════════════════════════════════════════════════════════ */
+    .how-section { padding: 6rem 1.5rem; text-align: center; }
+
+    .steps-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      max-width: 68rem;
+      margin: 3rem auto 0;
+    }
+    @media (max-width: 820px) { .steps-row { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 480px) { .steps-row { grid-template-columns: 1fr; } }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .85rem;
+    }
+    .step-num {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--black);
+      color: var(--cream);
+      font-size: .9rem;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-title { font-size: .975rem; font-weight: 700; }
+    .step-desc  { font-size: .85rem; color: var(--black70); line-height: 1.55; }
+
+    /* ══════════════════════════════════════════════════════════════════
+       FINAL CTA BAND
+    ══════════════════════════════════════════════════════════════════ */
+    .cta-band {
+      background: var(--green);
+      color: var(--cream);
+      padding: 5.5rem 1.5rem;
+      text-align: center;
+    }
+    .cta-band h2 {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 400;
+      letter-spacing: -.02em;
+      margin-bottom: 1rem;
+    }
+    .cta-band h2 em { font-style: italic; }
+    .cta-band p { font-size: 1rem; opacity: .75; margin-bottom: 2.5rem; }
+
+    .cta-band-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-white {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      background: var(--cream);
+      color: var(--black);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: .9rem 2.25rem;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      transition: background .2s, transform .15s;
+      box-shadow: 0 4px 20px rgba(0,0,0,.15);
+      cursor: pointer;
+      border: none;
+    }
+    .btn-white:hover { background: #fff; transform: translateY(-2px); }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: rgba(255,255,235,.8);
+      border: 1.5px solid rgba(255,255,235,.4);
+      padding: .9rem 1.75rem;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-ghost:hover { border-color: var(--cream); color: var(--cream); }
+
+    /* ══════════════════════════════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════════════════════════════ */
+    .footer {
+      background: var(--black);
+      color: var(--cream);
+      padding: 2.75rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+    }
+    .footer-brand { display: flex; align-items: center; gap: 1rem; }
+
+    .footer-logo {
+      height: 1.6rem;
+      width: auto;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+      opacity: .85;
+    }
+    .footer-brand-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      opacity: .85;
+    }
+    .footer-divider {
+      width: 1px; height: 1.1rem;
+      background: rgba(255,255,235,.3);
+    }
+
+    .footer-copy { font-size: .78rem; opacity: .35; }
+
+    .footer-links { display: flex; gap: 1.5rem; list-style: none; }
+    .footer-links a {
+      font-size: .8rem;
+      color: rgba(255,255,235,.4);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .footer-links a:hover { color: var(--cream); }
+
+    @media (max-width: 640px) {
+      .footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/main-BWNRc2uA.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabase-CdWdxYWD.js">
+  <link rel="stylesheet" crossorigin href="/assets/supabase-BeNCamte.css">
+</head>
+
+<body>
+
+  <!-- ────────────────── BANNER ──────────────────────────────────────── -->
+  <div class="banner">
+    <strong>🎉 Mira Workspace &amp; KnowNext Community — now live!</strong>
+    &nbsp;<a data-open-modal="signup">Get Early Access →</a>
+  </div>
+
+  <!-- ────────────────── NAVBAR ──────────────────────────────────────── -->
+  <div class="nav-sticky">
+    <nav class="nav-bar">
+
+      <a href="/" class="nav-brand">
+        <div class="brand-block">
+          <img src="/assets/Mira%20Logo%201-yw3WC1ee.png" alt="Mira Logo" class="brand-logo" />
+          <span class="brand-name">Mira</span>
+        </div>
+        <div class="brand-sep"></div>
+        <div class="brand-block">
+          <img src="/assets/KN%20logo%201-BUPK52e9.png" alt="KnowNext Logo" class="brand-logo" />
+          <span class="brand-name">KnowNext</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#mira">Workspace</a></li>
+        <li><a href="#knowNext">Community</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="nav-signin" data-open-modal="signin">Sign In</button>
+        <button class="nav-cta" data-open-modal="signup">Get Started</button>
+        <button class="nav-signout-btn" data-signout>Sign Out</button>
+      </div>
+
+      <div class="nav-hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </div>
+
+    </nav>
+  </div>
+
+  <!-- ────────────────── HERO ────────────────────────────────────────── -->
+  <main>
+    <section class="hero">
+
+      <div class="hero-eyebrow">
+        <span class="eyebrow-dot"></span>
+        Smart Workspace &amp; Learning Community
+      </div>
+
+      <h1 class="hero-h1">
+        One platform.<br />
+        <em>Every classroom need.</em>
+      </h1>
+
+      <p class="hero-sub">
+        <strong>Mira</strong> organizes your workspace — track attendance, host meetings,
+        manage PDFs and more. <strong>KnowNext</strong> connects students and teachers
+        in a community built for solving real problems together.
+      </p>
+
+      <div class="hero-cta-row">
+        <button class="btn-primary" data-open-modal="signup">
+          Get Started — It's Free
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+        <a href="#mira" class="btn-outline">Explore Features</a>
+      </div>
+
+      <p class="hero-note">Free to get started · No credit card needed · For students &amp; educators</p>
+
+      <!-- ── HERO DARK CARD ── -->
+      <div class="hero-card-wrap">
+
+        <!-- Main dark card with previews -->
+        <div class="hero-dark-card">
+          <div class="preview-grid">
+
+            <!-- ── Mira Preview ── -->
+            <div class="preview-pane">
+              <div class="pane-header">
+                <div class="pane-icon mira-icon">📋</div>
+                <div>
+                  <div class="pane-title">Mira Workspace</div>
+                  <div class="pane-subtitle">Today's dashboard</div>
+                </div>
+              </div>
+              <div class="pane-body">
+
+                <div class="feature-row">
+                  <div class="feature-row-icon">📊</div>
+                  <div class="feature-row-text">
+                    <div class="feature-row-label">Attendance Tracker</div>
+                    <div class="feature-row-desc">32 / 38 present · Batch B · Mon</div>
+                  </div>
+                  <div class="feature-row-badge">Live</div>
+                </div>
+
+                <div class="feature-row">
+                  <div class="feature-row-icon">📄</div>
+                  <div class="feature-row-text">
+                    <div class="feature-row-label">Physics Notes.pdf</div>
+                    <div class="feature-row-desc">Uploaded · Shared with Batch A</div>
+                  </div>
+                </div>
+
+                <div class="feature-row">
+                  <div class="feature-row-icon">🎥</div>
+                  <div class="feature-row-text">
+                    <div class="feature-row-label">Meeting · 3:00 PM</div>
+                    <div class="feature-row-desc">Parent–Teacher · 12 joined</div>
+                  </div>
+                  <div class="feature-row-badge">Soon</div>
+                </div>
+
+                <div class="feature-row">
+                  <div class="feature-row-icon">📅</div>
+                  <div class="feature-row-text">
+                    <div class="feature-row-label">Exam Schedule</div>
+                    <div class="feature-row-desc">Mid-term · Nov 4 – Nov 8</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ── KnowNext Preview ── -->
+            <div class="preview-pane">
+              <div class="pane-header">
+                <div class="pane-icon kn-icon">💬</div>
+                <div>
+                  <div class="pane-title">KnowNext Community</div>
+                  <div class="pane-subtitle">Recent discussions</div>
+                </div>
+              </div>
+              <div class="pane-body">
+
+                <div class="thread-item">
+                  <div class="thread-meta">
+                    <div class="thread-avatar av-s">A</div>
+                    <span class="thread-author">Ananya S.</span>
+                    <span class="thread-role-tag tag-student">Student</span>
+                  </div>
+                  <div class="thread-q">Why does pressure increase with depth in fluids? Can someone explain intuitively?</div>
+                  <div class="thread-answers"><strong>4 answers</strong> · Mr. Raj replied</div>
+                </div>
+
+                <div class="thread-item">
+                  <div class="thread-meta">
+                    <div class="thread-avatar av-t">T</div>
+                    <span class="thread-author">Mr. Raj</span>
+                    <span class="thread-role-tag tag-teacher">Teacher</span>
+                  </div>
+                  <div class="thread-q">Practice set for Integration posted — Chapter 7. Attempt before Thursday!</div>
+                  <div class="thread-answers"><strong>21 students</strong> bookmarked this</div>
+                </div>
+
+                <div class="thread-item">
+                  <div class="thread-meta">
+                    <div class="thread-avatar av-s">K</div>
+                    <span class="thread-author">Karthik M.</span>
+                    <span class="thread-role-tag tag-student">Student</span>
+                  </div>
+                  <div class="thread-q">Can someone share notes on Organic Chemistry reactions? I missed the class.</div>
+                  <div class="thread-answers"><strong>2 answers</strong> · PDF shared</div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ────────────── PRODUCT OVERVIEW CARDS ──────────────────────── -->
+    <section class="products-section" id="mira">
+      <p class="section-label">Two products, one ecosystem</p>
+
+      <div class="product-row">
+
+        <!-- Mira Card -->
+        <div class="product-card mira-card">
+          <div class="pc-logo-row">
+            <img src="/assets/Mira%20Logo%201-yw3WC1ee.png" alt="Mira" class="pc-logo" />
+            <span class="pc-name">Mira</span>
+          </div>
+          <div class="pc-tagline">
+            Your school.<br /><em>Perfectly organized.</em>
+          </div>
+          <p class="pc-desc">
+            Mira is the all-in-one workspace built for educational institutions.
+            Manage attendance, share resources, host virtual meetings, organize timetables
+            and keep every stakeholder on the same page — all from one dashboard.
+          </p>
+          <div class="pc-chips">
+            <span class="chip">📊 Attendance</span>
+            <span class="chip">📄 PDF Uploads</span>
+            <span class="chip">🎥 Meetings</span>
+            <span class="chip">📅 Scheduling</span>
+            <span class="chip">📢 Announcements</span>
+          </div>
+          <button class="pc-cta" data-open-modal="signup">
+            Explore Mira
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <!-- KnowNext Card -->
+        <div class="product-card kn-card" id="knowNext">
+          <div class="pc-logo-row">
+            <img src="/assets/KN%20logo%201-BUPK52e9.png" alt="KnowNext" class="pc-logo" />
+            <span class="pc-name">KnowNext</span>
+          </div>
+          <div class="pc-tagline">
+            Every question<br /><em>finds an answer.</em>
+          </div>
+          <p class="pc-desc">
+            KnowNext is the learning community where students post their doubts and
+            peers or teachers step in to help. Build shared knowledge, celebrate problem-solvers,
+            and ensure no student is ever stuck alone.
+          </p>
+          <div class="pc-chips">
+            <span class="chip">💬 Ask Anything</span>
+            <span class="chip">🏆 Top Helpers</span>
+            <span class="chip">📂 Share Resources</span>
+            <span class="chip">🔔 Follow Topics</span>
+            <span class="chip">👨‍🏫 Teacher Verified</span>
+          </div>
+          <button class="pc-cta" data-open-modal="signup">
+            Join KnowNext
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ────────────── MIRA FEATURE GRID ───────────────────────────── -->
+    <section class="features-detail">
+      <div class="features-detail-inner">
+
+        <h2 class="section-heading">Everything Mira<br /><em>handles for you</em></h2>
+        <p class="section-sub">Tools designed for teachers, administrators and institutions to run smoothly every day.</p>
+
+        <div class="feat-grid">
+
+          <div class="feat-card">
+            <span class="feat-card-emoji">📊</span>
+            <div class="feat-card-title">Attendance Management</div>
+            <p class="feat-card-desc">Mark, track and export daily attendance for students. Get alerts for absentees and auto-generate monthly reports.</p>
+          </div>
+
+          <div class="feat-card">
+            <span class="feat-card-emoji">📄</span>
+            <div class="feat-card-title">PDF Upload &amp; Sharing</div>
+            <p class="feat-card-desc">Upload notes, assignments and syllabi as PDFs. Share instantly with specific batches, classes or individuals.</p>
+          </div>
+
+          <div class="feat-card">
+            <span class="feat-card-emoji">🎥</span>
+            <div class="feat-card-title">Host Meetings</div>
+            <p class="feat-card-desc">Schedule and run virtual meetings directly inside Mira — parent-teacher meets, staff reviews or live classes.</p>
+          </div>
+
+          <div class="feat-card">
+            <span class="feat-card-emoji">📅</span>
+            <div class="feat-card-title">Timetable &amp; Scheduling</div>
+            <p class="feat-card-desc">Create and publish class schedules, exam dates and events. Students and teachers always know what's next.</p>
+          </div>
+
+          <div class="feat-card">
+            <span class="feat-card-emoji">📢</span>
+            <div class="feat-card-title">Announcements</div>
+            <p class="feat-card-desc">Broadcast notices to the whole school or specific batches. Urgent alerts, holiday notices and reminders in one tap.</p>
+          </div>
+
+          <div class="feat-card">
+            <span class="feat-card-emoji">📈</span>
+            <div class="feat-card-title">Reports &amp; Analytics</div>
+            <p class="feat-card-desc">Get a bird's-eye view of attendance trends, resource usage and engagement — all in one clean dashboard.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────── KNOWNEXT COMMUNITY SECTION ────────────────────── -->
+    <section class="community-section">
+      <div class="community-inner">
+
+        <h2 class="section-heading community-heading">
+          Learn together on<br /><em>KnowNext</em>
+        </h2>
+        <p class="section-sub" style="color:rgba(26,26,26,.65)">
+          A peer-powered community where curiosity meets collaboration.
+        </p>
+
+        <div class="community-grid">
+
+          <div class="comm-card">
+            <span class="comm-card-emoji">🙋</span>
+            <div class="comm-card-title">Post Your Doubts</div>
+            <p class="comm-card-desc">Any student can ask any question — from tricky math problems to career advice — and get real answers fast.</p>
+          </div>
+
+          <div class="comm-card">
+            <span class="comm-card-emoji">👨‍🏫</span>
+            <div class="comm-card-title">Teacher-Verified Answers</div>
+            <p class="comm-card-desc">Teachers can mark the best answers as verified, so students always know which solution to trust.</p>
+          </div>
+
+          <div class="comm-card">
+            <span class="comm-card-emoji">🤝</span>
+            <div class="comm-card-title">Peer-to-Peer Help</div>
+            <p class="comm-card-desc">Smart students help others and earn recognition. The more you give, the higher you rise on the leaderboard.</p>
+          </div>
+
+          <div class="comm-card">
+            <span class="comm-card-emoji">📂</span>
+            <div class="comm-card-title">Share Resources</div>
+            <p class="comm-card-desc">Attach PDFs, images and links to answers. Build a growing library of knowledge the whole class benefits from.</p>
+          </div>
+
+          <div class="comm-card">
+            <span class="comm-card-emoji">🔔</span>
+            <div class="comm-card-title">Follow Topics &amp; Tags</div>
+            <p class="comm-card-desc">Subscribe to subjects or topics. Get notified when new questions or answers appear in your areas of interest.</p>
+          </div>
+
+          <div class="comm-card">
+            <span class="comm-card-emoji">🏆</span>
+            <div class="comm-card-title">Recognition &amp; Badges</div>
+            <p class="comm-card-desc">Top contributors earn badges and are highlighted to the community — rewarding those who help others learn.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────── HOW IT WORKS ─────────────────────────────────── -->
+    <section class="how-section" id="how">
+      <h2 class="section-heading">Get started in <em>minutes</em></h2>
+      <p class="section-sub">No lengthy setup. Just sign up and your workspace is ready.</p>
+
+      <div class="steps-row">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-title">Create your account</div>
+          <p class="step-desc">Sign up as a student, teacher or institution admin — free.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-title">Set up your workspace</div>
+          <p class="step-desc">Add batches, upload resources and invite your team in minutes.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-title">Join the community</div>
+          <p class="step-desc">Connect to KnowNext, post questions and start helping peers.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-title">Run your school smarter</div>
+          <p class="step-desc">Track attendance, host meetings and never miss a thing.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────── FINAL CTA BAND ───────────────────────────────── -->
+    <section class="cta-band">
+      <h2>Ready to transform<br /><em>how you learn and work?</em></h2>
+      <p>Join thousands of students and educators already using Mira &amp; KnowNext.</p>
+      <div class="cta-band-row">
+        <button class="btn-white" data-open-modal="signup">
+          Get Started Free
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <a href="#mira" class="btn-ghost">See all features</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ────────────── FOOTER ───────────────────────────────────────────── -->
+  <footer class="footer">
+
+    <div class="footer-brand">
+      <img src="/assets/Mira%20Logo%201-yw3WC1ee.png" alt="Mira" class="footer-logo" />
+      <span class="footer-brand-name">Mira</span>
+      <div class="footer-divider"></div>
+      <img src="/assets/KN%20logo%201-BUPK52e9.png" alt="KnowNext" class="footer-logo" />
+      <span class="footer-brand-name">KnowNext</span>
+    </div>
+
+    <p class="footer-copy">© 2026 Mira &amp; KnowNext. All rights reserved.</p>
+
+    <ul class="footer-links">
+      <li><a href="#">Privacy Policy</a></li>
+      <li><a href="#">Terms of Use</a></li>
+      <li><a href="#">Contact Us</a></li>
+    </ul>
+
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       AUTH & ONBOARDING MODAL
+       ══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="auth-modal" aria-hidden="true">
+    <div class="modal-container" role="dialog" aria-modal="true">
+      <button class="modal-close-btn" id="modal-close" aria-label="Close modal">&times;</button>
+      <div class="modal-content">
+
+        <!-- ── STEP 1: AUTH (Sign Up / Sign In Tabs) ── -->
+        <div class="modal-step active" id="step-auth">
+          <div class="auth-header">
+            <h3>Welcome to Mira &amp; KnowNext</h3>
+            <p>Access your smart workspace and community</p>
+          </div>
+
+          <div class="auth-tabs">
+            <button class="auth-tab-btn active" data-tab="signup">Sign Up</button>
+            <button class="auth-tab-btn" data-tab="signin">Sign In</button>
+          </div>
+
+          <!-- SIGN UP PANE -->
+          <div class="pane" id="pane-signup">
+            <div class="form-error hidden" id="signup-error"></div>
+            <form id="form-signup">
+              <div class="form-group">
+                <label for="signup-name">Full Name</label>
+                <input type="text" id="signup-name" class="form-control" placeholder="Jane Doe" required />
+              </div>
+              <div class="form-group">
+                <label for="signup-email">Email Address</label>
+                <input type="email" id="signup-email" class="form-control" placeholder="jane@example.com" required />
+              </div>
+              <div class="form-group">
+                <label for="signup-password">Password</label>
+                <input type="password" id="signup-password" class="form-control" placeholder="At least 8 characters" minlength="8" required />
+              </div>
+              <div class="form-group">
+                <label for="signup-confirm">Confirm Password</label>
+                <input type="password" id="signup-confirm" class="form-control" placeholder="Re-enter password" minlength="8" required />
+              </div>
+              <button type="submit" class="btn-submit" id="btn-signup">Create Account &rarr;</button>
+            </form>
+          </div>
+
+          <!-- SIGN IN PANE -->
+          <div class="pane hidden" id="pane-signin">
+            <div class="form-error hidden" id="signin-error"></div>
+            <form id="form-signin">
+              <div class="form-group">
+                <label for="signin-email">Email Address</label>
+                <input type="email" id="signin-email" class="form-control" placeholder="jane@example.com" required />
+              </div>
+              <div class="form-group">
+                <label for="signin-password">Password</label>
+                <input type="password" id="signin-password" class="form-control" placeholder="Your password" required />
+              </div>
+              <button type="submit" class="btn-submit" id="btn-signin">Sign In &rarr;</button>
+            </form>
+            <div class="auth-links">
+              <a href="#" id="link-forgot">Forgot your password?</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STEP 1b: CONFIRM EMAIL (If email verification enabled) ── -->
+        <div class="modal-step" id="step-confirm-email">
+          <div class="welcome-container">
+            <div class="welcome-icon">✉️</div>
+            <h3 class="question-title">Check your inbox</h3>
+            <p class="question-goal" style="margin-top:0.5rem;">
+              We sent a verification link to your email. Click it to verify your account and continue.
+            </p>
+            <button class="btn-submit" onclick="closeModal()">Got it</button>
+          </div>
+        </div>
+
+        <!-- ── STEP 2: QUESTION 1 (ROLE) ── -->
+        <div class="modal-step" id="step-q1">
+          <div class="step-indicator">
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+          </div>
+          <h3 class="question-title">What primary role describes you best?</h3>
+          <p class="question-goal">Goal: Identify user persona and permissions.</p>
+
+          <div class="option-grid">
+            <div class="option-card" onclick="selectOption('role', 'student', this)">
+              <div class="option-icon">🎓</div>
+              <div class="option-text-wrap">
+                <div class="option-name">Student</div>
+                <div class="option-sub">Learn, track tasks &amp; ask doubts</div>
+              </div>
+            </div>
+            <div class="option-card" onclick="selectOption('role', 'teacher', this)">
+              <div class="option-icon">👨‍🏫</div>
+              <div class="option-text-wrap">
+                <div class="option-name">Teacher / Educator</div>
+                <div class="option-sub">Manage attendance, classes &amp; discussions</div>
+              </div>
+            </div>
+            <div class="option-card" onclick="selectOption('role', 'professional', this)">
+              <div class="option-icon">💼</div>
+              <div class="option-text-wrap">
+                <div class="option-name">Working Professional</div>
+                <div class="option-sub">Organize meetings, documents &amp; daily workflow</div>
+              </div>
+            </div>
+            <div class="option-card" onclick="selectOption('role', 'personal', this)">
+              <div class="option-icon">🚀</div>
+              <div class="option-text-wrap">
+                <div class="option-name">Personal / Freelancer</div>
+                <div class="option-sub">Solo workspace, projects &amp; continuous learning</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-submit" id="next-q1" onclick="goToStep('role', 'q2')" disabled>Continue &rarr;</button>
+        </div>
+
+        <!-- ── STEP 3: QUESTION 2 (MAIN GOAL) ── -->
+        <div class="modal-step" id="step-q2">
+          <div class="step-indicator">
+            <div class="step-dot active"></div>
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+          </div>
+          <h3 class="question-title">What is your main goal for using Mira today?</h3>
+          <p class="question-goal">Goal: Pre-configure your workspace layout &amp; suggestions.</p>
+
+          <div class="option-grid">
+            <div class="option-card" onclick="selectOption('goal', 'tasks_meetings', this)">
+              <div class="option-icon">🗓️</div>
+              <div class="option-text-wrap">
+                <div class="option-name">Organizing everyday tasks &amp; meetings</div>
+                <div class="option-sub">Mira Workspace</div>
+              </div>
+            </div>
+            <div class="option-card" onclick="selectOption('goal', 'pdfs_docs', this)">
+              <div class="option-icon">📂</div>
+              <div class="option-text-wrap">
+                <div class="option-name">Storing and summarizing PDFs / documents</div>
+                <div class="option-sub">Mira Workspace</div>
+              </div>
+            </div>
+            <div class="option-card" onclick="selectOption('goal', 'ask_answer', this)">
+              <div class="option-icon">💡</div>
+              <div class="option-text-wrap">
+                <div class="option-name">Asking &amp; answering academic questions</div>
+                <div class="option-sub">KnowNext Community</div>
+              </div>
+            </div>
+            <div class="option-card" onclick="selectOption('goal', 'teach_manage', this)">
+              <div class="option-icon">👥</div>
+              <div class="option-text-wrap">
+                <div class="option-name">Teaching &amp; managing student discussions</div>
+                <div class="option-sub">KnowNext Community</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-submit" id="next-q2" onclick="goToStep('goal', 'q3')" disabled>Continue &rarr;</button>
+        </div>
+
+        <!-- ── STEP 4: QUESTION 3 (WHERE SPEND TIME) ── -->
+        <div class="modal-step" id="step-q3">
+          <div class="step-indicator">
+            <div class="step-dot active"></div>
+            <div class="step-dot active"></div>
+            <div class="step-dot active"></div>
+          </div>
+          <h3 class="question-title">Where will you spend most of your time?</h3>
+          <p class="question-goal">Goal: Direct you to the right landing screen upon login.</p>
+
+          <div class="option-grid">
+            <div class="option-card" onclick="selectOption('workspace', 'mira', this)">
+              <div class="option-icon">📋</div>
+              <div class="option-text-wrap">
+                <div class="option-name">My Personal Workspace</div>
+                <div class="option-sub">Mira Workspace</div>
+              </div>
+            </div>
+            <div class="option-card" onclick="selectOption('workspace', 'knowNext', this)">
+              <div class="option-icon">🌐</div>
+              <div class="option-text-wrap">
+                <div class="option-name">The Learning Community</div>
+                <div class="option-sub">KnowNext Community</div>
+              </div>
+            </div>
+            <div class="option-card" onclick="selectOption('workspace', 'both', this)">
+              <div class="option-icon">⚡</div>
+              <div class="option-text-wrap">
+                <div class="option-name">Both equally</div>
+                <div class="option-sub">Unified dashboard</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-submit" id="next-q3" onclick="goToStep('workspace', 'welcome')" disabled>Complete Setup &rarr;</button>
+        </div>
+
+        <!-- ── STEP 5: WELCOME / ONBOARDING COMPLETED ── -->
+        <div class="modal-step" id="step-welcome">
+          <div class="welcome-container">
+            <div class="welcome-icon">🎉</div>
+            <h3 class="question-title">You're all set!</h3>
+            <p class="question-goal" style="margin-top:0.5rem;">
+              Your profile has been saved. Your workspace is customized and ready.
+            </p>
+
+            <div class="welcome-badges">
+              <div class="welcome-badge mira" id="badge-mira">
+                <span>📋</span> Mira Workspace Ready
+              </div>
+              <div class="welcome-badge kn" id="badge-kn">
+                <span>💬</span> KnowNext Community Joined
+              </div>
+            </div>
+
+            <button class="btn-submit" onclick="closeModal()">Go to Dashboard &rarr;</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Vite module entry -->
+
+</body>
+</html>
