@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  js/ai-bot.js — Interactive Mira AI Floating Character & Chat Assistant
+//  js/ai-bot.js — Interactive Mira AI Copilot Split Screen Controller
+//  (Microsoft Copilot style split-screen sidebar on right)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const MIRA_PROMPTS = {
@@ -11,7 +12,7 @@ const MIRA_PROMPTS = {
 const MIRA_RESPONSES = {
   brainstorm: `✨ **Here are 3 fresh ideas for your workspace:**\n1. **Focus Sprints:** Batch similar tasks into 45-min distraction-free blocks.\n2. **Unified Hub:** Auto-link your PDF notes directly into student project threads.\n3. **Knowledge Cards:** Convert meeting action items into shareable flash cards.`,
   plan: `📋 **Recommended Plan for Today:**\n• **Morning (9:30 - 11:30 AM):** Review & mark student attendance in Batch A.\n• **Afternoon (1:00 - 2:30 PM):** Upload course notes (PDF) & verify attachments.\n• **Late Afternoon (3:00 PM):** Live academic sync meeting with faculty.`,
-  chat: `👋 **Hi, I'm Mira!** I'm your workspace AI companion.\n\nI can help you with:\n• 📊 Organizing student attendance & generating exports\n• 📂 Summarizing and indexing uploaded PDFs\n• 🎥 Scheduling live meetings and study syncs\n• 🔒 Routing questions to the KnowNext anonymous community\n\nWhat would you like to tackle right now?`,
+  chat: `👋 **Hi, I'm Mira Copilot!** Your intelligent companion.\n\nI can assist you with:\n• 📊 Organizing student attendance & generating exports\n• 📂 Summarizing, annotating, and indexing uploaded PDFs\n• 🎥 Scheduling live meetings and study syncs\n• 🔒 Routing questions to the KnowNext anonymous community\n\nWhat would you like to tackle right now?`,
   default: `I'm here to make your workspace effortless. Click any of the shortcut prompts above, or ask me anything!`
 };
 
@@ -23,90 +24,117 @@ class MiraAiAssistant {
   }
 
   init() {
-    this.dock = document.getElementById('ai-bot-dock');
-    this.charBtn = document.getElementById('ai-character-button');
-    this.askPill = document.getElementById('ai-ask-pill');
-    this.chatDrawer = document.getElementById('ai-chat-drawer');
-    this.chatMessages = document.getElementById('ai-chat-messages');
-    this.chatInput = document.getElementById('ai-chat-input');
-    this.sendBtn = document.getElementById('ai-send-btn');
-    this.closeBtn = document.getElementById('ai-close-drawer');
+    this.dockBtn = document.getElementById('dock-btn-mira-ai');
+    this.sidebar = document.getElementById('mira-copilot-sidebar');
+    this.closeBtn = document.getElementById('copilot-close-btn');
+    this.newChatBtn = document.getElementById('copilot-new-chat-btn');
+    this.messagesContainer = document.getElementById('copilot-chat-messages');
+    this.inputField = document.getElementById('copilot-input-field');
+    this.form = document.getElementById('copilot-form');
 
-    if (!this.charBtn) return;
-
-    // Toggle drawer on character click
-    this.charBtn.addEventListener('click', (e) => {
+    // Toggle sidebar on dock button click
+    this.dockBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
-      this.toggleDrawer();
+      this.toggleSidebar();
     });
 
-    // Close button inside chat drawer
-    this.closeBtn?.addEventListener('click', () => this.closeDrawer());
-
-    // Send button & enter key
-    this.sendBtn?.addEventListener('click', () => this.handleSendMessage());
-    this.chatInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        this.handleSendMessage();
-      }
+    // Close button
+    this.closeBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.closeSidebar();
     });
 
-    // Preset action buttons inside drawer
+    // New Topic / Clear chat button
+    this.newChatBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.clearChat();
+    });
+
+    // Handle form submit
+    this.form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.handleFormSubmit(e);
+    });
+
+    // Preset action buttons inside copilot chips
     document.querySelectorAll('[data-mira-prompt]').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const key = btn.dataset.miraPrompt;
         this.openWithPrompt(key);
       });
     });
 
-    // Quick floating icon triggers
-    document.querySelectorAll('.ai-float-icon').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const action = btn.dataset.action;
-        this.openWithPrompt(action);
-      });
-    });
-
-    // Close when clicking outside
+    // Close when clicking outside on desktop
     document.addEventListener('click', (e) => {
-      if (this.isOpen && !this.chatDrawer.contains(e.target) && !this.dock.contains(e.target)) {
-        this.closeDrawer();
+      if (!this.isOpen || !this.sidebar) return;
+      if (
+        !this.sidebar.contains(e.target) &&
+        (!this.dockBtn || !this.dockBtn.contains(e.target)) &&
+        !e.target.closest('#dock-btn-mira-ai') &&
+        !e.target.closest('[onclick*="openMiraWith"]')
+      ) {
+        this.closeSidebar();
       }
     });
+
+    // Initial message
+    if (this.messages.length === 0 && this.messagesContainer) {
+      this.addBotMessage(MIRA_RESPONSES.chat);
+    }
   }
 
-  toggleDrawer() {
+  toggleSidebar() {
     if (this.isOpen) {
-      this.closeDrawer();
+      this.closeSidebar();
     } else {
-      this.openDrawer();
+      this.openSidebar();
     }
+  }
+
+  // Alias for backward compatibility
+  toggleDrawer() {
+    this.toggleSidebar();
   }
 
   openDrawer() {
-    this.isOpen = true;
-    this.dock?.classList.add('active');
-    this.chatDrawer?.classList.add('open');
-    if (this.askPill) this.askPill.style.display = 'none';
-
-    if (this.messages.length === 0) {
-      this.addBotMessage(MIRA_RESPONSES.chat);
-    }
-
-    setTimeout(() => this.chatInput?.focus(), 250);
+    this.openSidebar();
   }
 
   closeDrawer() {
+    this.closeSidebar();
+  }
+
+  openSidebar() {
+    this.isOpen = true;
+    this.sidebar?.classList.add('open');
+    this.dockBtn?.classList.add('active');
+
+    if (this.messages.length === 0 && this.messagesContainer) {
+      this.addBotMessage(MIRA_RESPONSES.chat);
+    }
+
+    setTimeout(() => this.inputField?.focus(), 150);
+  }
+
+  closeSidebar() {
     this.isOpen = false;
-    this.dock?.classList.remove('active');
-    this.chatDrawer?.classList.remove('open');
-    if (this.askPill) this.askPill.style.display = 'inline-flex';
+    this.sidebar?.classList.remove('open');
+    this.dockBtn?.classList.remove('active');
+  }
+
+  clearChat() {
+    this.messages = [];
+    if (this.messagesContainer) {
+      this.messagesContainer.innerHTML = '';
+    }
+    this.addBotMessage(`✨ **New Topic Started.**\n\nHow can I help you in your workspace today?`);
+    setTimeout(() => this.inputField?.focus(), 150);
   }
 
   openWithPrompt(keyOrText) {
-    if (!this.isOpen) this.openDrawer();
+    if (!this.isOpen) this.openSidebar();
     const promptText = MIRA_PROMPTS[keyOrText] || keyOrText;
     this.addUserMessage(promptText);
 
@@ -125,14 +153,15 @@ class MiraAiAssistant {
         }
       }
       this.addBotMessage(reply);
-    }, 450);
+    }, 400);
   }
 
-  handleSendMessage() {
-    const text = this.chatInput?.value.trim();
+  handleFormSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const text = this.inputField?.value.trim();
     if (!text) return;
     this.addUserMessage(text);
-    this.chatInput.value = '';
+    this.inputField.value = '';
 
     setTimeout(() => {
       const lower = text.toLowerCase();
@@ -147,26 +176,28 @@ class MiraAiAssistant {
         reply = `📂 **PDF Hub:**\nYou can drag and drop lecture notes and share them instantly with specific classes or batches.`;
       } else if (lower.includes('doubt') || lower.includes('question') || lower.includes('knownext')) {
         reply = `🔒 **KnowNext Q&A:**\nAll doubts on KnowNext are 100% anonymous, tagged by Roll Number so students ask freely without peer pressure.`;
+      } else if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
+        reply = `👋 Hello! How is your workflow going? Ask me to brainstorm ideas, plan your schedule, or organize your workspace!`;
       }
       this.addBotMessage(reply);
-    }, 500);
+    }, 450);
   }
 
   addUserMessage(text) {
     this.messages.push({ sender: 'user', text });
     const msgDiv = document.createElement('div');
-    msgDiv.className = 'ai-msg user-msg';
+    msgDiv.className = 'copilot-msg-bubble user-msg';
     msgDiv.textContent = text;
-    this.chatMessages?.appendChild(msgDiv);
+    this.messagesContainer?.appendChild(msgDiv);
     this.scrollToBottom();
   }
 
   addBotMessage(markdown) {
     this.messages.push({ sender: 'bot', text: markdown });
     const msgDiv = document.createElement('div');
-    msgDiv.className = 'ai-msg bot-msg';
+    msgDiv.className = 'copilot-msg-bubble bot-msg';
 
-    // Simple markdown conversion
+    // Simple markdown formatting
     let formatted = markdown
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\n• (.*?)(?=\n|$)/g, '<br/>• $1')
@@ -174,21 +205,27 @@ class MiraAiAssistant {
       .replace(/\n\n/g, '<br/><br/>');
 
     msgDiv.innerHTML = formatted;
-    this.chatMessages?.appendChild(msgDiv);
+    this.messagesContainer?.appendChild(msgDiv);
     this.scrollToBottom();
   }
 
   scrollToBottom() {
-    if (this.chatMessages) {
-      this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    if (this.messagesContainer) {
+      this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
     }
   }
 }
 
-// Global hook
+// Global hooks
 window.openMiraWith = (promptKey) => {
   if (window.miraAi) {
     window.miraAi.openWithPrompt(promptKey);
+  }
+};
+
+window.toggleMiraCopilot = () => {
+  if (window.miraAi) {
+    window.miraAi.toggleSidebar();
   }
 };
 

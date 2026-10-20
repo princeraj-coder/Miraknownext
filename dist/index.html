@@ -3,1540 +3,1798 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mira — One workspace for everything you do.</title>
-  <meta name="description" content="Think, create, and organize. Seamlessly. Mira brings your projects, conversations, calendar, and knowledge into one vibrant home for your ideas." />
-
-  <!-- Fonts: Inter & Plus Jakarta Sans & Playfair/Instruments for italics -->
+  <title>Mira — One workspace for everything you do</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
-  <style>
-    /* ══════════════════════════════════════════════════════════════════
-       GLOBAL RESET & THEME TOKENS
-       ══════════════════════════════════════════════════════════════════ */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --primary-purple: #7033ea;
-      --primary-purple-hover: #5d25cb;
-      --text-main: #181920;
-      --text-muted: #5c6072;
-      --text-light: #8e92a4;
-      --bg-cream: #faf9fb;
-      --radius-pill: 9999px;
-      --radius-card: 32px;
-      --radius-small-card: 24px;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: var(--font-sans);
-      background-color: var(--bg-cream);
-      color: var(--text-main);
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      line-height: 1.5;
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       FLOATING INTERACTIVE AI BOT DOCK & CHAT DRAWER
-       ══════════════════════════════════════════════════════════════════ */
-    .ai-bot-dock {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 2rem;
-      z-index: 1000;
-      width: 195px;
-      height: 180px;
-      user-select: none;
-    }
-
-    .ai-bot-glow {
-      position: absolute;
-      bottom: 4px;
-      right: 12px;
-      width: 130px;
-      height: 80px;
-      border-radius: 9999px;
-      background: radial-gradient(circle, rgba(244, 114, 182, 0.5) 0%, rgba(168, 85, 247, 0.3) 50%, transparent 80%);
-      filter: blur(14px);
-      pointer-events: none;
-      animation: aiGlowPulse 3.5s ease-in-out infinite alternate;
-    }
-
-    @keyframes aiGlowPulse {
-      0% { transform: scale(0.92); opacity: 0.65; }
-      100% { transform: scale(1.1); opacity: 1; }
-    }
-
-    .ai-ask-pill {
-      position: absolute;
-      bottom: 6px;
-      left: 0;
-      z-index: 20;
-      border-radius: 9999px;
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      background: rgba(255, 255, 255, 0.85);
-      padding: 6px 12px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #50376d;
-      box-shadow: 0 10px 25px -5px rgba(80, 55, 109, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.04);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
-    }
-
-    .ai-ask-pill:hover {
-      transform: translateY(-2px);
-      background: #ffffff;
-    }
-
-    .ai-character-button {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      z-index: 10;
-      width: 155px;
-      height: 170px;
-      overflow: visible;
-      background: transparent;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .ai-character-button:hover {
-      transform: translateY(-4px) scale(1.03);
-    }
-
-    .ai-character-image {
-      pointer-events: none;
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      max-width: none;
-      height: 165px;
-      width: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 14px 28px rgba(219, 39, 119, 0.28));
-      transition: transform 0.3s ease;
-    }
-
-    .ai-character-button:hover .ai-character-image {
-      transform: translateX(-50%) scale(1.02);
-    }
-
-    .ai-status-indicator {
-      position: absolute;
-      bottom: 12px;
-      right: 12px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: 2px solid #ffffff;
-      background: #60ebbd;
-      box-shadow: 0 0 12px #60ebbd, 0 0 4px #60ebbd;
-      animation: statusPulse 2s ease-in-out infinite;
-    }
-
-    @keyframes statusPulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 10px #60ebbd; }
-      50% { transform: scale(1.15); box-shadow: 0 0 16px #60ebbd, 0 0 6px #60ebbd; }
-    }
-
-    /* Floating orbiting quick action buttons */
-    .ai-float-icon {
-      position: absolute;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(120, 60, 220, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 15;
-      color: #50376d;
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s, box-shadow 0.25s;
-    }
-
-    .ai-float-icon:hover {
-      transform: scale(1.18) translateY(-3px);
-      background: #fdf2f8;
-      box-shadow: 0 10px 25px rgba(219, 39, 119, 0.25);
-    }
-
-    .ai-float-icon svg {
-      width: 16px;
-      height: 16px;
-      pointer-events: none;
-    }
-
-    .ai-float-one {
-      top: 14px;
-      left: 14px;
-      animation: floatA 3.4s ease-in-out infinite alternate;
-    }
-
-    .ai-float-two {
-      top: 50px;
-      left: -12px;
-      animation: floatB 4s ease-in-out infinite alternate;
-    }
-
-    .ai-float-three {
-      top: 98px;
-      left: -4px;
-      animation: floatC 3.6s ease-in-out infinite alternate;
-    }
-
-    @keyframes floatA {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-6px); }
-    }
-
-    @keyframes floatB {
-      0% { transform: translateY(0) translateX(0); }
-      100% { transform: translateY(-5px) translateX(4px); }
-    }
-
-    @keyframes floatC {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-6px) translateX(-3px); }
-    }
-
-    /* Interactive AI Chat Drawer */
-    .ai-chat-drawer {
-      position: fixed;
-      bottom: 200px;
-      right: 2rem;
-      width: 380px;
-      max-width: calc(100vw - 2.5rem);
-      height: 520px;
-      max-height: calc(100vh - 240px);
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      border-radius: 24px;
-      box-shadow: 0 25px 60px rgba(80, 55, 109, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      z-index: 1001;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      opacity: 0;
-      transform: translateY(20px) scale(0.95);
-      pointer-events: none;
-      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .ai-chat-drawer.open {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
-    }
-
-    .ai-drawer-header {
-      padding: 1rem 1.25rem;
-      background: linear-gradient(135deg, #743eed 0%, #db2777 100%);
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .ai-drawer-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .ai-drawer-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      border: 1.5px solid rgba(255, 255, 255, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .ai-drawer-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .ai-drawer-name {
-      font-size: 0.95rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-
-    .ai-drawer-sub {
-      font-size: 0.72rem;
-      opacity: 0.9;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .ai-drawer-sub::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #60ebbd;
-      box-shadow: 0 0 6px #60ebbd;
-    }
-
-    .ai-drawer-close {
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      color: #ffffff;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      line-height: 1;
-      transition: background 0.2s;
-    }
-
-    .ai-drawer-close:hover {
-      background: rgba(255, 255, 255, 0.35);
-    }
-
-    /* Preset prompt chips inside drawer */
-    .ai-prompt-chips {
-      display: flex;
-      gap: 6px;
-      padding: 8px 12px;
-      background: rgba(245, 243, 255, 0.7);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .ai-prompt-chips::-webkit-scrollbar {
-      display: none;
-    }
-
-    .ai-chip {
-      background: #ffffff;
-      border: 1px solid rgba(120, 60, 220, 0.15);
-      border-radius: 9999px;
-      padding: 4px 10px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #6b21a8;
-      white-space: nowrap;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s ease;
-    }
-
-    .ai-chip:hover {
-      background: #743eed;
-      color: #ffffff;
-      border-color: #743eed;
-      transform: translateY(-1px);
-    }
-
-    /* Chat message list */
-    .ai-chat-messages {
-      flex: 1;
-      padding: 1rem;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .ai-msg {
-      max-width: 82%;
-      padding: 10px 14px;
-      font-size: 0.85rem;
-      line-height: 1.45;
-      border-radius: 16px;
-      word-break: break-word;
-      animation: msgPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes msgPop {
-      0% { opacity: 0; transform: translateY(6px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    .ai-msg.bot-msg {
-      align-self: flex-start;
-      background: #f3f4f6;
-      color: #1f2937;
-      border-bottom-left-radius: 4px;
-    }
-
-    .ai-msg.user-msg {
-      align-self: flex-end;
-      background: linear-gradient(135deg, #743eed 0%, #db2777 100%);
-      color: #ffffff;
-      border-bottom-right-radius: 4px;
-      box-shadow: 0 4px 12px rgba(116, 62, 237, 0.2);
-    }
-
-    /* Input area */
-    .ai-chat-footer {
-      padding: 10px 12px;
-      border-top: 1px solid rgba(0, 0, 0, 0.06);
-      background: #ffffff;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .ai-chat-input {
-      flex: 1;
-      border: 1px solid rgba(0, 0, 0, 0.12);
-      border-radius: 9999px;
-      padding: 8px 14px;
-      font-size: 0.85rem;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .ai-chat-input:focus {
-      border-color: #743eed;
-      box-shadow: 0 0 0 3px rgba(116, 62, 237, 0.12);
-    }
-
-    .ai-chat-send {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #743eed;
-      border: none;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
-    }
-
-    .ai-chat-send:hover {
-      background: #5b21b6;
-      transform: scale(1.05);
-    }
-
-    @media (max-width: 600px) {
-      .ai-bot-dock {
-        right: 0.75rem;
-        bottom: 0.75rem;
-        transform: scale(0.88);
-        transform-origin: bottom right;
-      }
-      .ai-chat-drawer {
-        right: 0.75rem;
-        left: 0.75rem;
-        width: auto;
-        bottom: 160px;
-      }
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       SECTION 1: HERO PAGE (Image 1)
-       ══════════════════════════════════════════════════════════════════ */
-    .section-hero {
-      position: relative;
-      min-height: 100vh;
-      background: radial-gradient(circle at 10% 30%, rgba(94, 91, 240, 0.5) 0%, rgba(94, 91, 240, 0) 50%),
-                  radial-gradient(circle at 92% 40%, rgba(246, 182, 122, 0.45) 0%, rgba(79, 219, 238, 0.35) 30%, rgba(79, 219, 238, 0) 65%),
-                  linear-gradient(180deg, #743eed 0%, #894ef3 25%, #9d68f6 60%, #b88ef8 85%, #d1b4fa 100%);
-      padding: 1.5rem 2rem 4rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* Floating Navbar */
-    .hero-nav {
-      width: 100%;
-      max-width: 1180px;
-      height: 70px;
-      background: rgba(255, 255, 255, 0.35);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      border: 1px solid rgba(255, 255, 255, 0.55);
-      border-radius: var(--radius-pill);
-      padding: 0 1.25rem 0 1.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
-      margin-bottom: 3.5rem;
-    }
-
-    .nav-brand-left {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      text-decoration: none;
-    }
-
-    .nav-brand-left img {
-      height: 28px;
-      width: auto;
-      object-fit: contain;
-    }
-
-    .nav-brand-title {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #1a1a24;
-      letter-spacing: -0.02em;
-    }
-
-    .nav-center-links {
-      display: flex;
-      align-items: center;
-      gap: 2.5rem;
-      list-style: none;
-    }
-
-    @media (max-width: 800px) {
-      .nav-center-links { display: none; }
-    }
-
-    .nav-center-links a {
-      color: #272835;
-      font-size: 0.95rem;
-      font-weight: 500;
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
-
-    .nav-center-links a:hover {
-      color: #000;
-    }
-
-    .btn-nav-getstarted {
-      background: var(--primary-purple);
-      color: #ffffff;
-      border: none;
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 600;
-      padding: 0.65rem 1.6rem;
-      border-radius: var(--radius-pill);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      box-shadow: 0 6px 18px rgba(112, 51, 234, 0.35);
-      transition: all 0.25s ease;
-    }
-
-    .btn-nav-getstarted:hover {
-      background: var(--primary-purple-hover);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(112, 51, 234, 0.5);
-    }
-
-    /* Hero Light Card Container */
-    .hero-card-container {
-      width: 100%;
-      max-width: 1040px;
-      background: rgba(255, 255, 255, 0.78);
-      backdrop-filter: blur(36px);
-      -webkit-backdrop-filter: blur(36px);
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      border-radius: var(--radius-card);
-      padding: 4.5rem 2.5rem 3.5rem;
-      text-align: center;
-      box-shadow: 0 28px 70px rgba(80, 30, 160, 0.15), inset 0 1px 1px #ffffff;
-      position: relative;
-    }
-
-    .hero-top-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(0, 0, 0, 0.06);
-      padding: 0.45rem 1.25rem;
-      border-radius: var(--radius-pill);
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #3b3d4f;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-
-    .hero-title-main {
-      font-size: clamp(2.8rem, 6.5vw, 4.8rem);
-      font-weight: 800;
-      color: #12131a;
-      letter-spacing: -0.035em;
-      line-height: 1.1;
-      margin-bottom: 1.25rem;
-    }
-
-    .hero-title-main em {
-      font-style: italic;
-      font-weight: 600;
-      background: linear-gradient(135deg, #6432e6 0%, #2596be 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      padding-right: 0.1em;
-    }
-
-    .hero-subhead-bold {
-      font-size: clamp(1.15rem, 2.4vw, 1.45rem);
-      font-weight: 700;
-      color: #2a2c3a;
-      margin-bottom: 0.85rem;
-    }
-
-    .hero-desc-text {
-      font-size: 1.05rem;
-      color: var(--text-muted);
-      max-width: 640px;
-      margin: 0 auto 2.5rem;
-      line-height: 1.6;
-    }
-
-    /* Hero Buttons */
-    .hero-actions-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.1rem;
-      flex-wrap: wrap;
-      margin-bottom: 2rem;
-    }
-
-    .btn-hero-purple {
-      background: var(--primary-purple);
-      color: #ffffff;
-      border: none;
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 0.85rem 2.25rem;
-      border-radius: var(--radius-pill);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      box-shadow: 0 10px 24px rgba(112, 51, 234, 0.4);
-      transition: all 0.25s ease;
-    }
-
-    .btn-hero-purple:hover {
-      background: var(--primary-purple-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 14px 32px rgba(112, 51, 234, 0.55);
-    }
-
-    .btn-hero-glass {
-      background: rgba(255, 255, 255, 0.7);
-      color: #1e202c;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 0.85rem 2rem;
-      border-radius: var(--radius-pill);
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.25s ease;
-    }
-
-    .btn-hero-glass:hover {
-      background: #ffffff;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-      transform: translateY(-1px);
-    }
-
-    .hero-footer-note {
-      font-size: 0.85rem;
-      color: #6a6e82;
-      font-weight: 500;
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       SECTION 2: SCANNER / LIVE WEBSITE PREVIEW BOX (Image 2)
-       ══════════════════════════════════════════════════════════════════ */
-    .section-scanner {
-      padding: 5rem 2rem;
-      background: #faf9fb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .scanner-box-wrapper {
-      width: 100%;
-      max-width: 1180px;
-      background: #0d0e12;
-      border: 1px solid rgba(0, 0, 0, 0.15);
-      border-radius: var(--radius-card);
-      overflow: hidden;
-      box-shadow: 0 35px 80px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.06);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      cursor: pointer;
-    }
-
-    .scanner-box-wrapper:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 45px 100px rgba(0, 0, 0, 0.28);
-    }
-
-    .scanner-top-bar {
-      height: 48px;
-      background: #17181f;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      padding: 0 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .scanner-dots {
-      display: flex;
-      gap: 7px;
-    }
-
-    .scanner-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-    }
-
-    .scanner-dot.r { background: #ff5f57; }
-    .scanner-dot.y { background: #febc2e; }
-    .scanner-dot.g { background: #28c840; }
-
-    .scanner-title-badge {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.55);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .scanner-preview-img {
-      width: 100%;
-      height: auto;
-      display: block;
-      object-fit: cover;
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       SECTION 3: FEATURES PAGE (Image 3)
-       ══════════════════════════════════════════════════════════════════ */
-    .section-features {
-      padding: 6rem 2rem 5rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .features-header-row {
-      display: grid;
-      grid-template-columns: 1.25fr 1fr;
-      gap: 3rem;
-      align-items: flex-start;
-      margin-bottom: 4rem;
-    }
-
-    @media (max-width: 860px) {
-      .features-header-row {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-      }
-    }
-
-    .feat-eyebrow {
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      color: var(--primary-purple);
-      text-transform: uppercase;
-      margin-bottom: 0.75rem;
-    }
-
-    .feat-main-headline {
-      font-size: clamp(2.4rem, 4.5vw, 3.8rem);
-      font-weight: 800;
-      color: #12131a;
-      letter-spacing: -0.03em;
-      line-height: 1.12;
-    }
-
-    .feat-header-desc {
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      line-height: 1.65;
-      padding-top: 1.5rem;
-    }
-
-    /* 4 Feature Cards Grid */
-    .features-cards-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1.25rem;
-    }
-
-    @media (max-width: 1024px) {
-      .features-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 580px) {
-      .features-cards-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .feature-clean-card {
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.07);
-      border-radius: var(--radius-small-card);
-      padding: 2.25rem 1.75rem;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .feature-clean-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
-      border-color: rgba(112, 51, 234, 0.2);
-    }
-
-    .feat-icon-sq {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      margin-bottom: 1.75rem;
-    }
-
-    .feat-icon-sq.orange { background: #ffedd5; color: #ea580c; }
-    .feat-icon-sq.blue   { background: #e0e7ff; color: #4338ca; }
-    .feat-icon-sq.green  { background: #dcfce7; color: #15803d; }
-    .feat-icon-sq.yellow { background: #fef3c7; color: #d97706; }
-
-    .feat-card-title {
-      font-size: 1.22rem;
-      font-weight: 700;
-      color: #12131a;
-      letter-spacing: -0.01em;
-      margin-bottom: 0.75rem;
-    }
-
-    .feat-card-body {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      line-height: 1.55;
-      margin-bottom: 2rem;
-      flex-grow: 1;
-    }
-
-    .feat-card-link {
-      color: #14151e;
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      transition: color 0.2s ease, gap 0.2s ease;
-    }
-
-    .feat-card-link:hover {
-      color: var(--primary-purple);
-      gap: 0.6rem;
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       SECTION 4: GET STARTED BANNER & FOOTER (Image 4)
-       ══════════════════════════════════════════════════════════════════ */
-    .section-getstarted {
-      padding: 3rem 2rem 5rem;
-      background: #faf9fb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .cta-card-aurora {
-      width: 100%;
-      max-width: 1040px;
-      background: radial-gradient(circle at 10% 20%, rgba(200, 230, 255, 0.8) 0%, rgba(200, 230, 255, 0) 50%),
-                  radial-gradient(circle at 90% 80%, rgba(255, 220, 200, 0.8) 0%, rgba(255, 220, 200, 0) 50%),
-                  linear-gradient(135deg, #f5f2fd 0%, #ebe5fc 50%, #fbf4ee 100%);
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      border-radius: var(--radius-card);
-      padding: 5rem 2.5rem;
-      text-align: center;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.06);
-      margin-bottom: 5rem;
-    }
-
-    .cta-sparkle-pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.8);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      color: var(--primary-purple);
-      font-size: 1.1rem;
-      margin-bottom: 1.75rem;
-    }
-
-    .cta-card-title {
-      font-size: clamp(2.4rem, 5vw, 3.8rem);
-      font-weight: 800;
-      color: #12131a;
-      letter-spacing: -0.03em;
-      margin-bottom: 1rem;
-    }
-
-    .cta-card-desc {
-      font-size: 1.05rem;
-      color: var(--text-muted);
-      max-width: 620px;
-      margin: 0 auto 2.5rem;
-      line-height: 1.6;
-    }
-
-    .btn-cta-large {
-      background: var(--primary-purple);
-      color: #ffffff;
-      border: none;
-      font-family: inherit;
-      font-size: 1.05rem;
-      font-weight: 600;
-      padding: 0.95rem 2.5rem;
-      border-radius: var(--radius-pill);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      box-shadow: 0 10px 24px rgba(112, 51, 234, 0.4);
-      transition: all 0.25s ease;
-    }
-
-    .btn-cta-large:hover {
-      background: var(--primary-purple-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 14px 32px rgba(112, 51, 234, 0.55);
-    }
-
-    /* Clean Footer */
-    .clean-footer {
-      width: 100%;
-      max-width: 1180px;
-      border-top: 1px solid rgba(0, 0, 0, 0.08);
-      padding: 2.25rem 1rem 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-    }
-
-    .footer-brand-left {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-    }
-
-    .footer-brand-left img {
-      height: 26px;
-      width: auto;
-    }
-
-    .footer-brand-left span {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #1a1a24;
-    }
-
-    .footer-copyright {
-      font-size: 0.88rem;
-      color: var(--text-light);
-    }
-
-    .footer-links-right {
-      display: flex;
-      gap: 1.75rem;
-      list-style: none;
-    }
-
-    .footer-links-right a {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.88rem;
-      font-weight: 500;
-      transition: color 0.2s ease;
-    }
-
-    .footer-links-right a:hover {
-      color: #000;
-    }
-  </style>
-  <script type="module" crossorigin src="/assets/main-BF_6qoS_.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/supabase-CdWdxYWD.js">
-  <link rel="stylesheet" crossorigin href="/assets/supabase-BeNCamte.css">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  
+  <script type="module" crossorigin src="/assets/main-CmVvOvbg.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-w5KGT6ad.css">
 </head>
 
 <body>
 
-  <!-- ══════════════════════════════════════════════════════════════════
-       FLOATING INTERACTIVE AI BOT DOCK & CHAT WIDGET
-       ══════════════════════════════════════════════════════════════════ -->
-  <div class="ai-bot-dock" id="ai-bot-dock">
-    <div class="ai-bot-glow"></div>
-    <span class="ai-ask-pill" id="ai-ask-pill">Ask Mira</span>
-    <button type="button" class="ai-character-button" id="ai-character-button" aria-label="Open Mira AI">
-      <img class="ai-character-image" src="/mira-ai-character.png" alt="Mira AI Character" />
-      <span class="ai-status-indicator"></span>
-    </button>
-    <button type="button" class="ai-float-icon ai-float-one" data-action="brainstorm" onclick="openMiraWith('Help me brainstorm fresh ideas')" aria-label="Brainstorm with Mira" title="Brainstorm ideas">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7e22ce" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"/>
-      </svg>
-    </button>
-    <button type="button" class="ai-float-icon ai-float-two" data-action="plan" onclick="openMiraWith('Plan and prioritize my day')" aria-label="Plan with Mira" title="Plan with Mira">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="3"/>
-        <path d="m9 12 2 2 4-4"/>
-      </svg>
-    </button>
-    <button type="button" class="ai-float-icon ai-float-three" data-action="chat" onclick="openMiraWith('What can you help me with?')" aria-label="Chat with Mira" title="Chat with Mira">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-      </svg>
-    </button>
-  </div>
+  <div class="app-shell">
 
-  <!-- Slide-out Interactive AI Assistant Drawer -->
-  <div class="ai-chat-drawer" id="ai-chat-drawer" role="dialog" aria-label="Mira AI Assistant">
-    <div class="ai-drawer-header">
-      <div class="ai-drawer-title-wrap">
-        <div class="ai-drawer-avatar">
-          <img src="/mira-ai-character.png" alt="Mira" />
+    <!-- ══════════════════════════════════════════════════════════════════
+         LEFT VERTICAL SIDEBAR DOCK
+         ══════════════════════════════════════════════════════════════════ -->
+    <aside class="sidebar-dock" aria-label="Main Navigation">
+      <div class="sidebar-top">
+        <!-- Mira Logo Badge with #a489f4 background as in user design -->
+        <div class="logo-dock-badge" onclick="window.miraApp.switchView('home')" title="Mira Workspace">
+          <img src="/resorse/Mira Logo 1.png" alt="Mira Logo" />
         </div>
-        <div>
-          <div class="ai-drawer-name">Mira AI Companion</div>
-          <div class="ai-drawer-sub">Online & Ready to help</div>
+
+        <!-- 1. Home View -->
+        <button type="button" class="dock-btn active" data-nav-view="home" data-tooltip="Home Dashboard" aria-label="Home Dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </button>
+
+        <!-- 2. Split-Screen Workspace Studio -->
+        <button type="button" class="dock-btn" data-nav-view="workspace" id="dock-btn-workspace" data-tooltip="Split Screen Studio" aria-label="Split Screen Studio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </button>
+
+        <!-- Sub-tray: Open Split Screen Windows (Image 2) -->
+        <div class="sidebar-open-tools-tray" id="sidebar-open-tools-tray"></div>
+
+        <!-- 3. Plan your day (Synced with Plan Icon) -->
+        <button type="button" class="dock-btn" data-nav-view="tasks" data-tooltip="Plan your day" aria-label="Plan your day">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </button>
+
+        <!-- 4. Focus Timer (Windows Clock inspired) -->
+        <button type="button" class="dock-btn" data-nav-view="focus" id="dock-btn-focus" data-tooltip="Focus Sessions" aria-label="Focus Sessions">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="13" r="8"/>
+            <path d="M12 9v4l2 2"/>
+            <path d="M5 3L2 6"/>
+            <path d="M22 6l-3-3"/>
+            <path d="M10 2h4"/>
+          </svg>
+        </button>
+
+        <!-- 5. Search / Command Palette -->
+        <button type="button" class="dock-btn" id="dock-btn-search" data-tooltip="Spotlight Search (Ctrl+K)" aria-label="Spotlight Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+
+        <!-- 6. Notifications -->
+        <button type="button" class="dock-btn" id="dock-btn-notif" data-tooltip="Notifications" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="badge-dot-pink"></span>
+        </button>
+
+
+        <!-- 8. All Tools Launcher -->
+        <button type="button" class="dock-btn" data-nav-view="tools" data-tooltip="Tools Launcher" aria-label="Tools Launcher">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Bottom Dock: Copilot, Help & Settings -->
+      <div class="sidebar-bottom">
+        <!-- Mira AI Copilot (Moved permanently to Left Dock above Help) -->
+        <button type="button" class="dock-btn dock-btn-mira-copilot" id="dock-btn-mira-ai" data-tooltip="Mira AI Copilot" aria-label="Open Mira AI Copilot">
+          <div class="dock-mira-avatar-wrap">
+            <img src="/mira-ai-character.png" alt="Mira" class="dock-mira-avatar-img" />
+          </div>
+          <span class="badge-dot-pink" style="bottom:3px; right:3px; top:auto;"></span>
+        </button>
+
+        <button type="button" class="dock-btn" data-tooltip="Help & FAQ" onclick="window.openMiraWith('What can you help me with?')" aria-label="Help">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </button>
+
+        <button type="button" class="dock-btn" data-tooltip="Settings" onclick="window.miraApp.openModal('modal-spotlight')" aria-label="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TOOL LIBRARY POPUP FLYOUT (Image 1 - Pops up when Workspace clicked)
+         ══════════════════════════════════════════════════════════════════ -->
+    <div class="workspace-tool-library-popup" id="workspace-tool-library-popup" role="menu" aria-label="Tool Library">
+      <div class="tool-library-header">
+        <span class="tool-library-title">Tool Library</span>
+        <button type="button" class="tool-library-close-btn" id="close-tool-library-btn" onclick="window.miraApp.closeToolLibrary()" title="Close Library">&times;</button>
+      </div>
+      <div class="tool-library-list">
+        <!-- 1. Slides -->
+        <div class="tool-lib-item" data-lib-tool="slides" onclick="window.miraApp.addToolToSplitWorkspace('slides')">
+          <div class="tool-lib-icon" style="color: #f97316;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <span class="tool-lib-name">Slides</span>
+          <span class="tool-lib-status" id="lib-status-slides"></span>
+        </div>
+
+        <!-- 2. Knownext -->
+        <div class="tool-lib-item" data-lib-tool="knownext" onclick="window.miraApp.addToolToSplitWorkspace('knownext')">
+          <div class="tool-lib-icon" style="color: #a855f7;">
+            <span style="font-size:11px; font-weight:800; border:1.5px solid currentColor; border-radius:50%; width:19px; height:19px; display:inline-flex; align-items:center; justify-content:center;">KN</span>
+          </div>
+          <span class="tool-lib-name">Knownext</span>
+          <span class="tool-lib-status" id="lib-status-knownext"></span>
+        </div>
+
+        <!-- 3. Host -->
+        <div class="tool-lib-item" data-lib-tool="host" onclick="window.miraApp.addToolToSplitWorkspace('host')">
+          <div class="tool-lib-icon" style="color: #06b6d4;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+              <line x1="6" y1="6" x2="6.01" y2="6"/>
+              <line x1="6" y1="18" x2="6.01" y2="18"/>
+            </svg>
+          </div>
+          <span class="tool-lib-name">Host</span>
+          <span class="tool-lib-status" id="lib-status-host"></span>
+        </div>
+
+        <!-- 4. Mira Docs -->
+        <div class="tool-lib-item" data-lib-tool="docs" onclick="window.miraApp.addToolToSplitWorkspace('docs')">
+          <div class="tool-lib-icon" style="color: #3b82f6;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <span class="tool-lib-name">Mira Docs</span>
+          <span class="tool-lib-status" id="lib-status-docs"></span>
+        </div>
+
+        <!-- 5. Sheets -->
+        <div class="tool-lib-item" data-lib-tool="sheets" onclick="window.miraApp.addToolToSplitWorkspace('sheets')">
+          <div class="tool-lib-icon" style="color: #10b981;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+              <line x1="15" y1="3" x2="15" y2="21"/>
+            </svg>
+          </div>
+          <span class="tool-lib-name">Sheets</span>
+          <span class="tool-lib-status" id="lib-status-sheets"></span>
+        </div>
+
+        <!-- 6. Meeting -->
+        <div class="tool-lib-item" data-lib-tool="meet" onclick="window.miraApp.addToolToSplitWorkspace('meet')">
+          <div class="tool-lib-icon" style="color: #059669;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+          </div>
+          <span class="tool-lib-name">Meeting</span>
+          <span class="tool-lib-status" id="lib-status-meet"></span>
+        </div>
+
+        <!-- 7. Mail -->
+        <div class="tool-lib-item" data-lib-tool="mail" onclick="window.miraApp.addToolToSplitWorkspace('mail')">
+          <div class="tool-lib-icon" style="color: #ef4444;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <span class="tool-lib-name">Mail</span>
+          <span class="tool-lib-status" id="lib-status-mail"></span>
+        </div>
+
+        <!-- 8. Drive -->
+        <div class="tool-lib-item" data-lib-tool="drive" onclick="window.miraApp.addToolToSplitWorkspace('drive')">
+          <div class="tool-lib-icon" style="color: #eab308;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <span class="tool-lib-name">Drive</span>
+          <span class="tool-lib-status" id="lib-status-drive"></span>
+        </div>
+
+        <!-- 9. Calendar -->
+        <div class="tool-lib-item" data-lib-tool="calendar" onclick="window.miraApp.addToolToSplitWorkspace('calendar')">
+          <div class="tool-lib-icon" style="color: #6366f1;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <span class="tool-lib-name">Calendar</span>
+          <span class="tool-lib-status" id="lib-status-calendar"></span>
+        </div>
+
+        <!-- 10. Plugins & Integrations -->
+        <div class="tool-lib-item" data-lib-tool="plugins" onclick="window.miraApp.addToolToSplitWorkspace('plugins')">
+          <div class="tool-lib-icon" style="color: #a489f4;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 11.5L12.5 7"/>
+              <path d="M13 3.5l2.5-2.5"/>
+              <path d="M19.5 10l2.5-2.5"/>
+              <path d="M14 14l-1.5 1.5a4.24 4.24 0 0 1-6 0l-2-2a4.24 4.24 0 0 1 0-6L6 6"/>
+              <path d="M6.5 17.5L2 22"/>
+              <line x1="15" y1="18.5" x2="21" y2="18.5" stroke-width="2.5"/>
+              <line x1="18" y1="15.5" x2="18" y2="21.5" stroke-width="2.5"/>
+            </svg>
+          </div>
+          <span class="tool-lib-name">Plugins</span>
+          <span class="tool-lib-status" id="lib-status-plugins"></span>
         </div>
       </div>
-      <button class="ai-drawer-close" id="ai-close-drawer" aria-label="Close chat">&times;</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         MAIN CONTENT WRAPPER
+         ══════════════════════════════════════════════════════════════════ -->
+    <div class="main-wrapper">
+
+      <!-- Viewport for dynamic views -->
+      <main class="views-viewport" id="views-viewport">
+
+        <!-- ════════════════════════════════════════════════════════════════
+             VIEW 1: HOME SCREEN (Exact match to User Reference)
+             ════════════════════════════════════════════════════════════════ -->
+        <section class="view-section active" id="view-home">
+          <div class="home-page-wrap">
+
+            <!-- Top Header & Greeting -->
+            <div class="home-top-header">
+              <div>
+                <div class="home-eyebrow-label">Your Workspace</div>
+                <h1 class="home-main-greeting">Good morning, Prince.</h1>
+              </div>
+
+              <div class="home-sync-status">
+                <div class="sync-dots-group">
+                  <span class="sync-dot"></span>
+                  <span class="sync-dot"></span>
+                  <span class="sync-dot"></span>
+                </div>
+                <span>All synced</span>
+              </div>
+            </div>
+
+            <!-- 2-Column Grid: WORK OS (Left) & ASK MIRA (Right) -->
+            <div class="home-workspace-grid">
+
+              <!-- Left Column Card: WORK OS -->
+              <div class="work-os-card">
+                <div class="work-os-header">
+                  <div class="work-os-eyebrow">Work OS</div>
+                  <div class="work-os-title-row">
+                    <h2 class="work-os-title">Everything moving together.</h2>
+                    <button type="button" class="work-os-viewall" onclick="window.miraApp.switchView('tools')">
+                      <span>View all</span>
+                      <span>&gt;</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Live Session & Focus Summary (Returns from Workspace) -->
+                <div class="session-summary-banner" id="session-summary-banner">
+                  <div class="session-summary-header">
+                    <div class="session-summary-header-left">
+                      <div class="session-summary-icon">⚡</div>
+                      <div>
+                        <div class="session-summary-title">Today's Focus &amp; Work Session</div>
+                        <div class="session-summary-sub">Automatic sync with active tools &amp; tasks</div>
+                      </div>
+                    </div>
+                    <button type="button" class="btn-resume-workspace" onclick="window.miraApp.toggleToolLibrary()">+ Open Tools</button>
+                  </div>
+                  <div class="session-stats-grid">
+                    <div class="session-stat-box">
+                      <div class="session-stat-label">Focus Time</div>
+                      <div class="session-stat-val" id="session-stat-focus">32m</div>
+                      <div class="session-stat-sub">Live session tracked</div>
+                    </div>
+                    <div class="session-stat-box">
+                      <div class="session-stat-label">Tools Used</div>
+                      <div class="session-stat-val" id="session-stat-tools-count">3 apps</div>
+                      <div class="session-stat-sub" id="session-stat-tools-list">Docs · Sheets · Mail</div>
+                    </div>
+                    <div class="session-stat-box">
+                      <div class="session-stat-label">Remaining Tasks</div>
+                      <div class="session-stat-val" id="session-stat-tasks">3 tasks</div>
+                      <div class="session-stat-sub" id="session-stat-tasks-sub">Plan your day</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tools list stacked -->
+                <div class="work-os-tool-list">
+                  <!-- Row 1: Plan your day -->
+                  <div class="work-tool-row" onclick="window.miraApp.switchView('tasks')">
+                    <div class="tool-row-left">
+                      <div class="tool-row-icon tool-icon-tasks">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M9 11l3 3L22 4"/>
+                          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                      </div>
+                      <div class="tool-row-info">
+                        <div class="tool-row-name">Plan your day</div>
+                        <div class="tool-row-sub" id="home-tasks-sub-count">3 open · Synced</div>
+                      </div>
+                    </div>
+                    <div class="tool-row-right">
+                      <span class="tool-status-pill">Live</span>
+                      <span class="tool-row-arrow">&gt;</span>
+                    </div>
+                  </div>
+
+                  <!-- Row 2: Docs -->
+                  <div class="work-tool-row" onclick="window.miraApp.addToolToSplitWorkspace('docs')">
+                    <div class="tool-row-left">
+                      <div class="tool-row-icon tool-icon-docs">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                          <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                      </div>
+                      <div class="tool-row-info">
+                        <div class="tool-row-name">Docs</div>
+                        <div class="tool-row-sub">12 recent</div>
+                      </div>
+                    </div>
+                    <div class="tool-row-right">
+                      <span class="tool-status-pill">Synced</span>
+                      <span class="tool-row-arrow">&gt;</span>
+                    </div>
+                  </div>
+
+                  <!-- Row 3: Projects -->
+                  <div class="work-tool-row" onclick="window.miraApp.switchView('tasks')">
+                    <div class="tool-row-left">
+                      <div class="tool-row-icon tool-icon-projects">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        </svg>
+                      </div>
+                      <div class="tool-row-info">
+                        <div class="tool-row-name">Projects</div>
+                        <div class="tool-row-sub">5 active</div>
+                      </div>
+                    </div>
+                    <div class="tool-row-right">
+                      <span class="tool-status-pill">On track</span>
+                      <span class="tool-row-arrow">&gt;</span>
+                    </div>
+                  </div>
+
+                  <!-- Row 4: Meetings -->
+                  <div class="work-tool-row" onclick="window.miraApp.openModal('modal-live-room')">
+                    <div class="tool-row-left">
+                      <div class="tool-row-icon tool-icon-meetings">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <polygon points="23 7 16 12 23 17 23 7"/>
+                          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                        </svg>
+                      </div>
+                      <div class="tool-row-info">
+                        <div class="tool-row-name">Meetings</div>
+                        <div class="tool-row-sub">Next: 2:00 PM</div>
+                      </div>
+                    </div>
+                    <div class="tool-row-right">
+                      <span class="tool-status-pill">Ready</span>
+                      <span class="tool-row-arrow">&gt;</span>
+                    </div>
+                  </div>
+
+                  <!-- Row 5: KnowNext Community -->
+                  <div class="work-tool-row" onclick="window.miraApp.switchView('knownext')">
+                    <div class="tool-row-left">
+                      <div class="tool-row-icon tool-icon-knownext">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                      </div>
+                      <div class="tool-row-info">
+                        <div class="tool-row-name">KnowNext Community</div>
+                        <div class="tool-row-sub">3 doubts active</div>
+                      </div>
+                    </div>
+                    <div class="tool-row-right">
+                      <span class="tool-status-pill">Live</span>
+                      <span class="tool-row-arrow">&gt;</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Column Card: PLAN YOUR DAY (Inspired by Notion & Google Tasks) -->
+              <div class="plan-your-day-card">
+                <!-- Card Header -->
+                <div class="plan-card-header">
+                  <div class="plan-card-header-left">
+                    <div class="plan-card-badge-icon" title="Plan your day">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                      </svg>
+                    </div>
+                    <div class="plan-card-title-wrap">
+                      <div class="plan-card-title-row">
+                        <h2 class="plan-card-title">Plan your day</h2>
+                        <span class="plan-card-synced-pill">Synced</span>
+                      </div>
+                      <div class="plan-card-date-sub" id="plan-day-date-text">Focus Schedule · Today</div>
+                    </div>
+                  </div>
+
+                  <div class="plan-card-header-right">
+                    <button type="button" class="plan-viewall-btn" onclick="window.miraApp.switchView('tasks')" title="Open full Plan view">
+                      <span>View all</span>
+                      <span>&gt;</span>
+                    </button>
+                    <button type="button" class="plan-btn-plus" data-open-add-task title="Add new task to plan">
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Notion / Google Tasks Progress Bar -->
+                <div class="plan-progress-row">
+                  <div class="plan-progress-labels">
+                    <span class="plan-progress-text" id="plan-progress-status-text">1 of 4 completed</span>
+                    <span class="plan-progress-pct" id="plan-progress-pct-text">25%</span>
+                  </div>
+                  <div class="plan-progress-track">
+                    <div class="plan-progress-fill" id="plan-progress-fill-bar" style="width: 25%;"></div>
+                  </div>
+                </div>
+
+                <!-- Scrollable Interactive Task List (Notion & Google Tasks style) -->
+                <div class="plan-tasks-viewport">
+                  <div class="checklist-container" id="home-checklist-container">
+                    <!-- Rendered dynamically by MiraApp.renderTasks() -->
+                  </div>
+                </div>
+
+                <!-- Notion & Google Tasks Inline Quick-Add Box -->
+                <form id="form-home-quick-task" class="plan-quick-add-box" onsubmit="window.miraApp.handleHomeQuickTaskSubmit(event)">
+                  <span class="plan-quick-add-plus">+</span>
+                  <input type="text" class="plan-quick-add-input" id="home-quick-task-input" placeholder="Add a task to your plan... (Press Enter)" autocomplete="off" />
+                  <button type="submit" class="plan-quick-add-btn" aria-label="Add task to plan">Add</button>
+                </form>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ════════════════════════════════════════════════════════════════
+             VIEW 2: SPLIT SCREEN MULTI-TOOL WORKSPACE STUDIO (Image 2)
+             ════════════════════════════════════════════════════════════════ -->
+        <section class="view-section" id="view-workspace">
+          <div class="workspace-studio-layout">
+
+            <!-- Workspace Studio Top Control Bar -->
+            <div class="workspace-top-bar">
+              <div class="workspace-top-left">
+                <button type="button" class="btn-workspace-add-tool" onclick="window.miraApp.toggleToolLibrary()" title="Add tool or plugin to split screen" aria-label="Add Tool to Split Screen">
+                  <svg class="plugin-svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 11.5L12.5 7" />
+                    <path d="M13 3.5l2.5-2.5" />
+                    <path d="M19.5 10l2.5-2.5" />
+                    <path d="M14 14l-1.5 1.5a4.24 4.24 0 0 1-6 0l-2-2a4.24 4.24 0 0 1 0-6L6 6" />
+                    <path d="M6.5 17.5L2 22" />
+                    <line x1="15" y1="18.5" x2="21" y2="18.5" stroke-width="2.5" />
+                    <line x1="18" y1="15.5" x2="18" y2="21.5" stroke-width="2.5" />
+                  </svg>
+                  <span>Add Tool</span>
+                </button>
+                <div class="workspace-active-count-pill" id="workspace-active-count-pill">
+                  3 Windows Active
+                </div>
+              </div>
+
+              <div class="workspace-top-right">
+                <div class="workspace-focus-badge">
+                  <span class="status-dot-emerald"></span>
+                  <span id="workspace-focus-timer-text">Focus: 32m</span>
+                </div>
+                <button type="button" class="btn-return-home" onclick="window.miraApp.switchView('home')" title="Return to Home Dashboard">
+                  Home Dashboard &rarr;
+                </button>
+              </div>
+            </div>
+
+            <!-- Split Canvas with Panes (Image 2 - Full Viewport Side-by-Side) -->
+            <div class="split-workspace-canvas" id="split-workspace-canvas">
+
+              <!-- Pane 1: Docs Editor (Image 2 - Launch brief) -->
+              <div class="split-window-pane" id="split-pane-docs" data-pane-tool="docs">
+                <div class="split-window-header">
+                  <div class="window-title-group">
+                    <span class="window-tool-name">Docs</span>
+                    <span class="window-live-badge">Live</span>
+                  </div>
+                  <div class="window-controls">
+                    <button type="button" class="win-btn win-btn-min" title="Minimize" onclick="window.miraApp.minimizeToolPane('docs')">−</button>
+                    <button type="button" class="win-btn win-btn-max" id="btn-max-docs" title="Full Window / Maximize" onclick="window.miraApp.maximizeToolPane('docs')">⛶</button>
+                    <button type="button" class="win-btn close" title="Close" onclick="window.miraApp.removeToolFromSplitWorkspace('docs')">✕</button>
+                  </div>
+                </div>
+
+                <div class="split-window-body">
+                  <div class="doc-page-canvas">
+                    <div class="doc-tagline">PRODUCT STRATEGY</div>
+                    <h1 class="doc-heading-title" contenteditable="true" spellcheck="false">Launch brief</h1>
+                    <p class="doc-body-paragraph" contenteditable="true" spellcheck="false">
+                      Mira helps teams turn scattered context into a calm, connected day of work.
+                    </p>
+                    <div class="doc-section-h3" style="font-size: 13px; font-weight: 700; color: #111827; margin: 1.5rem 0 0.5rem;">Priorities</div>
+                    <p class="doc-body-paragraph" contenteditable="true" spellcheck="false">
+                      Align the team around the release plan and make every next step visible.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pane 2: Sheets Spreadsheet (Image 2 - Clean connected state & grid) -->
+              <div class="split-window-pane" id="split-pane-sheets" data-pane-tool="sheets">
+                <div class="split-window-header">
+                  <div class="window-title-group">
+                    <span class="window-tool-name">Sheets</span>
+                    <span class="window-live-badge">Live</span>
+                  </div>
+                  <div class="window-controls">
+                    <button type="button" class="win-btn win-btn-min" title="Minimize" onclick="window.miraApp.minimizeToolPane('sheets')">−</button>
+                    <button type="button" class="win-btn win-btn-max" id="btn-max-sheets" title="Full Window / Maximize" onclick="window.miraApp.maximizeToolPane('sheets')">⛶</button>
+                    <button type="button" class="win-btn close" title="Close" onclick="window.miraApp.removeToolFromSplitWorkspace('sheets')">✕</button>
+                  </div>
+                </div>
+
+                <div class="split-window-body" style="background: #f8fafc; display:flex; flex-direction:column; justify-content:center; align-items:center; position:relative;">
+                  <div style="text-align: center; padding: 2rem;">
+                    <div style="width: 48px; height: 48px; border-radius: 12px; border: 2px solid #cbd5e1; display:flex; align-items:center; justify-content:center; margin: 0 auto 1rem; color: #64748b; font-size: 20px;">
+                      田
+                    </div>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-bottom: 0.35rem;">Sheets</h3>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 1.5rem;">This tool is connected to your workspace.</p>
+                    <button type="button" class="btn-hero-secondary" style="border-color:#cbd5e1; color:#334155;" onclick="window.miraApp.toggleSheetTableView()">
+                      Open Data Table Grid
+                    </button>
+                  </div>
+
+                  <!-- Optional Collapsible Table -->
+                  <div id="sheets-full-table-container" style="display:none; position:absolute; inset:0; background:#ffffff; overflow:auto; padding:1rem;">
+                    <div class="sheets-toolbar" style="margin-bottom:10px;">
+                      <button type="button" class="sheet-tool-btn" onclick="window.miraApp.triggerSavedNotification('Row added');">+ Row</button>
+                      <button type="button" class="sheet-tool-btn" onclick="window.miraApp.triggerSavedNotification('Exported CSV');">Export</button>
+                      <button type="button" class="sheet-tool-btn" style="margin-left:auto;" onclick="window.miraApp.toggleSheetTableView()">✕ Close Table</button>
+                    </div>
+                    <table class="mira-sheet-table">
+                      <thead>
+                        <tr><th>#</th><th>Milestone</th><th>Owner</th><th>Status</th><th>Est. Hours</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>1</td><td contenteditable="true">Core UI Rebuild</td><td contenteditable="true">Prince</td><td contenteditable="true" style="color:#10b981; font-weight:700;">Complete</td><td contenteditable="true">14 hrs</td></tr>
+                        <tr><td>2</td><td contenteditable="true">Split Studio Tools</td><td contenteditable="true">Mira Team</td><td contenteditable="true" style="color:#3b82f6; font-weight:700;">In Progress</td><td contenteditable="true">8 hrs</td></tr>
+                        <tr><td>3</td><td contenteditable="true">KnowNext Tutor Match</td><td contenteditable="true">Community</td><td contenteditable="true" style="color:#f59e0b; font-weight:700;">Scheduled</td><td contenteditable="true">6 hrs</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pane 3: Mail & PDFMail (Image 2) -->
+              <div class="split-window-pane" id="split-pane-mail" data-pane-tool="mail">
+                <div class="split-window-header">
+                  <div class="window-title-group">
+                    <span class="window-tool-name">Mail</span>
+                    <span class="window-live-badge">Live</span>
+                  </div>
+                  <div class="window-controls">
+                    <button type="button" class="win-btn win-btn-min" title="Minimize" onclick="window.miraApp.minimizeToolPane('mail')">−</button>
+                    <button type="button" class="win-btn win-btn-max" id="btn-max-mail" title="Full Window / Maximize" onclick="window.miraApp.maximizeToolPane('mail')">⛶</button>
+                    <button type="button" class="win-btn close" title="Close" onclick="window.miraApp.removeToolFromSplitWorkspace('mail')">✕</button>
+                  </div>
+                </div>
+
+                <div class="split-window-body" style="background:#f8fafc; position:relative;">
+                  <div class="mail-pane-view">
+                    <div class="mail-item selected" onclick="window.miraApp.triggerSavedNotification('Viewing Launch Review Notes')">
+                      <div class="mail-avatar">MC</div>
+                      <div class="mail-text-block">
+                        <div class="mail-subject">Launch review notes</div>
+                        <div class="mail-sender">Maya Chen</div>
+                      </div>
+                    </div>
+
+                    <div class="mail-item" onclick="window.miraApp.triggerSavedNotification('Viewing Design Handoff')">
+                      <div class="mail-avatar">DT</div>
+                      <div class="mail-text-block">
+                        <div class="mail-subject">Design handoff ready</div>
+                        <div class="mail-sender">Team workspace</div>
+                      </div>
+                    </div>
+
+                    <div class="mail-item" onclick="window.miraApp.triggerSavedNotification('Viewing Q4 Planning')">
+                      <div class="mail-avatar">QP</div>
+                      <div class="mail-text-block">
+                        <div class="mail-subject">Q4 planning update</div>
+                        <div class="mail-sender">Team workspace</div>
+                      </div>
+                    </div>
+
+                    <div class="mail-item" onclick="window.miraApp.triggerSavedNotification('Viewing Daily Summary')">
+                      <div class="mail-avatar">MI</div>
+                      <div class="mail-text-block">
+                        <div class="mail-subject">Your daily summary</div>
+                        <div class="mail-sender">Team workspace</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Bottom Ask Mira pill inside Mail pane (Image 2) -->
+                  <div style="position:absolute; bottom:16px; right:16px; display:flex; align-items:center; gap:8px;">
+                    <button type="button" style="background:#11121d; color:#ffffff; border:1px solid rgba(255,255,255,0.15); border-radius:9999px; padding:6px 14px; font-size:11px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="window.openMiraWith('What can you help me with in Mail?')">
+                      <span>✨</span> Ask Mira
+                    </button>
+                    <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #a489f4 0%, #743eed 100%); display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px solid #ffffff; box-shadow:0 4px 12px rgba(116,62,237,0.4); cursor:pointer;" onclick="window.miraAi?.toggleDrawer()">
+                      <img src="/mira-ai-character.png" alt="Mira" style="width:100%; height:100%; object-fit:cover; object-position:center 10%; transform:scale(1.4) translateY(2px);" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pane 4: Slides (Interactive Presentation) -->
+              <div class="split-window-pane" id="split-pane-slides" data-pane-tool="slides" style="display:none;">
+                <div class="split-window-header">
+                  <div class="window-title-group">
+                    <span class="window-tool-name">Slides</span>
+                    <span class="window-live-badge">Live</span>
+                  </div>
+                  <div class="window-controls">
+                    <button type="button" class="win-btn win-btn-min" title="Minimize" onclick="window.miraApp.minimizeToolPane('slides')">−</button>
+                    <button type="button" class="win-btn win-btn-max" id="btn-max-slides" title="Full Window / Maximize" onclick="window.miraApp.maximizeToolPane('slides')">⛶</button>
+                    <button type="button" class="win-btn close" title="Close" onclick="window.miraApp.removeToolFromSplitWorkspace('slides')">✕</button>
+                  </div>
+                </div>
+                <div class="split-window-body" style="background:#13141f; color:#ffffff; display:flex; flex-direction:column; padding:1.5rem; justify-content:space-between;">
+                  <div>
+                    <div style="font-size:11px; font-weight:700; color:#f97316; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">Slide Deck · Presentation 1</div>
+                    <div style="background:#1c1d2c; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:2rem; min-height:220px; display:flex; flex-direction:column; justify-content:center; text-align:center;">
+                      <h2 style="font-size:1.5rem; font-weight:800; margin-bottom:8px;">Mira Platform Strategy</h2>
+                      <p style="font-size:13px; color:#94a3b8;">Unified workspace, split screens &amp; peer doubts</p>
+                    </div>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.08);">
+                    <span style="font-size:12px; color:#64748b;">Slide 1 of 6</span>
+                    <div style="display:flex; gap:8px;">
+                      <button type="button" class="btn-hero-secondary" style="padding:4px 10px; font-size:11px;">Prev</button>
+                      <button type="button" class="btn-hero-primary" style="padding:4px 10px; font-size:11px; background:#f97316;">Next &rarr;</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pane 5: Knownext Live Community & Student Space (Image 4) -->
+              <div class="split-window-pane" id="split-pane-knownext" data-pane-tool="knownext" style="display:none;">
+                <div class="split-window-header">
+                  <div class="window-title-group">
+                    <span class="window-tool-name">Knownext Student Space</span>
+                    <span class="window-live-badge">Live</span>
+                  </div>
+                  <div class="window-controls">
+                    <button type="button" class="win-btn win-btn-min" title="Minimize" onclick="window.miraApp.minimizeToolPane('knownext')">−</button>
+                    <button type="button" class="win-btn win-btn-max" id="btn-max-knownext" title="Full Window / Maximize" onclick="window.miraApp.maximizeToolPane('knownext')">⛶</button>
+                    <button type="button" class="win-btn close" title="Close" onclick="window.miraApp.removeToolFromSplitWorkspace('knownext')">✕</button>
+                  </div>
+                </div>
+                <div class="split-window-body" style="background:#0e0f17; color:#ffffff; overflow-y:auto;">
+                  <div class="knownext-container" style="padding:1.5rem; max-width:100%;">
+
+                    <!-- Big KnowNext Hero Banner -->
+                    <div class="knownext-hero-card" style="padding:2rem 2.2rem;">
+                      <div class="kn-logo-brand">
+                        <span class="part-know">Know</span><span class="part-next">Next</span>
+                      </div>
+                      <div class="kn-eyebrow">STUDENT SPACE</div>
+
+                      <h1 class="kn-headline" style="font-size:clamp(1.8rem, 3.2vw, 2.6rem);">
+                        Learn with people,<br />not just pages.
+                      </h1>
+
+                      <p class="kn-subline">
+                        Questions, tutors, group study and live teaching—connected in one place.
+                      </p>
+
+                      <button type="button" class="btn-kn-ask" data-open-ask-doubt>
+                        <span>💬</span> Ask a doubt
+                      </button>
+                    </div>
+
+                    <!-- 4 Feature Cards Row -->
+                    <div class="kn-features-row" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+
+                      <!-- Card 1: Tutor -->
+                      <div class="kn-feature-card" id="card-kn-tutor">
+                        <div class="kn-card-top-icon icon-purple">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div class="kn-card-title">Connect to a tutor</div>
+                          <div class="kn-card-desc">Get one-to-one help from a verified tutor.</div>
+                        </div>
+                        <span class="kn-card-arrow">&gt;</span>
+                      </div>
+
+                      <!-- Card 2: Study Together -->
+                      <div class="kn-feature-card" id="card-kn-study">
+                        <div class="kn-card-top-icon icon-blue">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div class="kn-card-title">Study together</div>
+                          <div class="kn-card-desc">Join focused groups with students learning the same topic.</div>
+                        </div>
+                        <span class="kn-card-arrow">&gt;</span>
+                      </div>
+
+                      <!-- Card 3: Video Lectures -->
+                      <div class="kn-feature-card" id="card-kn-videos">
+                        <div class="kn-card-top-icon icon-orange">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="23 7 16 12 23 17 23 7"/>
+                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div class="kn-card-title">Video lectures</div>
+                          <div class="kn-card-desc">Watch clear lessons at your own pace.</div>
+                        </div>
+                        <span class="kn-card-arrow">&gt;</span>
+                      </div>
+
+                      <!-- Card 4: Live Classes -->
+                      <div class="kn-feature-card" id="card-kn-classes">
+                        <div class="kn-card-top-icon icon-green">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div class="kn-card-title">Live classes</div>
+                          <div class="kn-card-desc">Teachers can host and manage interactive sessions.</div>
+                        </div>
+                        <span class="kn-card-arrow">&gt;</span>
+                      </div>
+
+                    </div>
+
+                    <!-- Upcoming Live Session Banner -->
+                    <div class="kn-live-session-card">
+                      <div class="kn-session-left">
+                        <div class="kn-session-badge">Upcoming Live Session</div>
+                        <h3 class="kn-session-title">How to think through hard physics problems</h3>
+                        <div class="kn-session-meta">Hosted by Arjun Mishra · Today at 6:30 PM</div>
+                      </div>
+
+                      <div class="kn-session-right">
+                        <div class="avatar-stack">
+                          <div class="avatar-stack-chip">A</div>
+                          <div class="avatar-stack-chip">R</div>
+                          <div class="avatar-stack-chip chip-count">+8</div>
+                        </div>
+
+                        <button type="button" class="btn-join-session" id="btn-join-upcoming-session">
+                          Join session
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Live Doubts Feed -->
+                    <div style="background:#151624; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <span style="font-size:13px; font-weight:700; color:#c4b5fd;">🔒 Live Anonymous Doubts Feed</span>
+                        <span style="font-size:11px; color:#10b981;">● Online Now</span>
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:8px;">
+                        <div style="background:#1a1c2d; border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:10px;">
+                          <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8; margin-bottom:4px;">
+                            <span style="color:#a489f4; font-weight:700;">#23CS048 (You)</span>
+                            <span>Physics · 12m ago</span>
+                          </div>
+                          <div style="font-size:13px; font-weight:600;">How does Fermat's principle relate to wave refraction?</div>
+                          <div style="font-size:11px; color:#10b981; margin-top:6px;">✓ 2 Peer Tutors active</div>
+                        </div>
+                        <div style="background:#1a1c2d; border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:10px;">
+                          <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8; margin-bottom:4px;">
+                            <span style="color:#a489f4; font-weight:700;">#23EE102</span>
+                            <span>Algorithms · 35m ago</span>
+                          </div>
+                          <div style="font-size:13px; font-weight:600;">Time complexity of Red-Black tree rebalancing?</div>
+                          <div style="font-size:11px; color:#3b82f6; margin-top:6px;">💬 4 Answers posted</div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pane 6: Host Studio (Cloud & Deployment Monitoring) -->
+              <div class="split-window-pane" id="split-pane-host" data-pane-tool="host" style="display:none;">
+                <div class="split-window-header">
+                  <div class="window-title-group">
+                    <span class="window-tool-name">Host</span>
+                    <span class="window-live-badge">Live</span>
+                  </div>
+                  <div class="window-controls">
+                    <button type="button" class="win-btn win-btn-min" title="Minimize" onclick="window.miraApp.minimizeToolPane('host')">−</button>
+                    <button type="button" class="win-btn win-btn-max" id="btn-max-host" title="Full Window / Maximize" onclick="window.miraApp.maximizeToolPane('host')">⛶</button>
+                    <button type="button" class="win-btn close" title="Close" onclick="window.miraApp.removeToolFromSplitWorkspace('host')">✕</button>
+                  </div>
+                </div>
+                <div class="split-window-body" style="background:#090a10; color:#ffffff; padding:1.25rem; font-family: monospace;">
+                  <div style="font-size:12px; color:#06b6d4; font-weight:700; margin-bottom:12px;">SERVER CLUSTER: US-EAST-PRODUCTION</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
+                    <div style="background:#141624; padding:8px; border-radius:6px; font-size:11px;">
+                      <div style="color:#94a3b8;">Uptime</div>
+                      <div style="font-size:14px; color:#10b981; font-weight:700;">99.98%</div>
+                    </div>
+                    <div style="background:#141624; padding:8px; border-radius:6px; font-size:11px;">
+                      <div style="color:#94a3b8;">CPU Load</div>
+                      <div style="font-size:14px; color:#3b82f6; font-weight:700;">18.4%</div>
+                    </div>
+                  </div>
+                  <div style="font-size:11px; color:#64748b; margin-bottom:6px;">LIVE LOG STREAM</div>
+                  <div style="background:#050508; border:1px solid rgba(255,255,255,0.06); border-radius:6px; padding:8px; font-size:10.5px; line-height:1.6; color:#94a3b8; max-height:160px; overflow-y:auto;">
+                    [INFO] HTTP 200 GET /api/v1/workspace/sync<br/>
+                    [INFO] TLS handshake completed in 12ms<br/>
+                    [INFO] Node pod-4 ready and accepting traffic<br/>
+                    [INFO] Memory usage optimal: 3.4GB / 8.0GB
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pane 7: Meet Video Room -->
+              <div class="split-window-pane" id="split-pane-meet" data-pane-tool="meet" style="display:none;">
+                <div class="split-window-header">
+                  <div class="window-title-group">
+                    <span class="window-tool-name">Meeting</span>
+                    <span class="window-live-badge">Live</span>
+                  </div>
+                  <div class="window-controls">
+                    <button type="button" class="win-btn win-btn-min" title="Minimize" onclick="window.miraApp.minimizeToolPane('meet')">−</button>
+                    <button type="button" class="win-btn win-btn-max" id="btn-max-meet" title="Full Window / Maximize" onclick="window.miraApp.maximizeToolPane('meet')">⛶</button>
+                    <button type="button" class="win-btn close" title="Close" onclick="window.miraApp.removeToolFromSplitWorkspace('meet')">✕</button>
+                  </div>
+                </div>
+                <div class="split-window-body" style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:#0f172a; color:#ffffff; padding:2rem; text-align:center;">
+                  <div style="width: 70px; height: 70px; border-radius: 50%; background: #1e293b; display:flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:1rem;">
+                    🎥
+                  </div>
+                  <h3 style="font-size: 1.15rem; font-weight:700; margin-bottom:0.35rem;">Academic &amp; Team Sync</h3>
+                  <p style="font-size: 12px; color:#94a3b8; margin-bottom:1.25rem;">Camera &amp; Microphone connected</p>
+                  <button type="button" class="btn-hero-primary" style="background:#10b981;" onclick="window.miraApp.openModal('modal-live-room')">
+                    Join Live Call
+                  </button>
+                </div>
+              </div>
+
+              <!-- Pane 8: Drive Files -->
+              <div class="split-window-pane" id="split-pane-drive" data-pane-tool="drive" style="display:none;">
+                <div class="split-window-header">
+                  <div class="window-title-group">
+                    <span class="window-tool-name">Drive</span>
+                    <span class="window-live-badge">Live</span>
+                  </div>
+                  <div class="window-controls">
+                    <button type="button" class="win-btn win-btn-min" title="Minimize" onclick="window.miraApp.minimizeToolPane('drive')">−</button>
+                    <button type="button" class="win-btn win-btn-max" id="btn-max-drive" title="Full Window / Maximize" onclick="window.miraApp.maximizeToolPane('drive')">⛶</button>
+                    <button type="button" class="win-btn close" title="Close" onclick="window.miraApp.removeToolFromSplitWorkspace('drive')">✕</button>
+                  </div>
+                </div>
+                <div class="split-window-body" style="padding: 1.5rem; background:#f8fafc;">
+                  <h3 style="font-size: 1rem; margin-bottom: 1rem; color:#1e293b;">Workspace Files</h3>
+                  <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:8px; cursor:pointer;" onclick="window.miraApp.triggerSavedNotification('Opened Product Brief.pdf')">
+                      📄 Product Brief.pdf
+                    </div>
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:8px; cursor:pointer;" onclick="window.miraApp.triggerSavedNotification('Opened Sprint Metrics.xlsx')">
+                      📊 Sprint Metrics.xlsx
+                    </div>
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:8px; cursor:pointer;" onclick="window.miraApp.triggerSavedNotification('Opened Lecture 14 Notes.pdf')">
+                      📚 Lecture 14 Notes.pdf
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pane 9: Calendar (Split-screen Calendar Tool inside Workspace) -->
+              <div class="split-window-pane" id="split-pane-calendar" data-pane-tool="calendar" style="display:none;">
+                <div class="split-window-header">
+                  <div class="window-title-group">
+                    <span class="window-tool-name">Calendar</span>
+                    <span class="window-live-badge">Live</span>
+                  </div>
+                  <div class="window-controls">
+                    <button type="button" class="win-btn win-btn-min" title="Minimize" onclick="window.miraApp.minimizeToolPane('calendar')">−</button>
+                    <button type="button" class="win-btn win-btn-max" id="btn-max-calendar" title="Full Window / Maximize" onclick="window.miraApp.maximizeToolPane('calendar')">⛶</button>
+                    <button type="button" class="win-btn close" title="Close" onclick="window.miraApp.removeToolFromSplitWorkspace('calendar')">✕</button>
+                  </div>
+                </div>
+                <div class="split-window-body" style="padding: 1.25rem; background:#f8fafc; overflow-y:auto;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <h3 style="font-size: 13.5px; font-weight:700; color:#1e293b;">Today's Schedule &amp; Milestones</h3>
+                    <button type="button" class="btn-hero-primary" style="padding:4px 10px; font-size:11px;" onclick="window.miraApp.openModal('modal-add-task')">+ Event</button>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="background:#ffffff; border-left:3px solid #6366f1; border:1px solid #e2e8f0; border-left-width:3px; border-radius:8px; padding:10px 12px;">
+                      <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#1e293b;">
+                        <span>10:00 AM · Product Sync</span>
+                        <span style="font-size:10.5px; color:#6366f1; font-weight:600;">In 30m</span>
+                      </div>
+                      <div style="font-size:11px; color:#64748b; margin-top:2px;">Sprint roadmap review &amp; split workspace demos</div>
+                    </div>
+                    <div style="background:#ffffff; border-left:3px solid #10b981; border:1px solid #e2e8f0; border-left-width:3px; border-radius:8px; padding:10px 12px;">
+                      <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#1e293b;">
+                        <span>1:30 PM · Deep Work Sprint</span>
+                        <span style="font-size:10.5px; color:#10b981; font-weight:600;">Focus</span>
+                      </div>
+                      <div style="font-size:11px; color:#64748b; margin-top:2px;">Linked to Focus Timer session (45 mins)</div>
+                    </div>
+                    <div style="background:#ffffff; border-left:3px solid #f97316; border:1px solid #e2e8f0; border-left-width:3px; border-radius:8px; padding:10px 12px;">
+                      <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#1e293b;">
+                        <span>6:30 PM · Physics Doubt Live</span>
+                        <span style="font-size:10.5px; color:#f97316; font-weight:600;">KnowNext</span>
+                      </div>
+                      <div style="font-size:11px; color:#64748b; margin-top:2px;">Hosted by Arjun Mishra with 10 peer students</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pane 10: Plugins & Integrations (Split-screen Plugin Store & Manager) -->
+              <div class="split-window-pane" id="split-pane-plugins" data-pane-tool="plugins" style="display:none;">
+                <div class="split-window-header">
+                  <div class="window-title-group">
+                    <span class="window-tool-name">Plugins &amp; Add-ins</span>
+                    <span class="window-live-badge">Live</span>
+                  </div>
+                  <div class="window-controls">
+                    <button type="button" class="win-btn win-btn-min" title="Minimize" onclick="window.miraApp.minimizeToolPane('plugins')">−</button>
+                    <button type="button" class="win-btn win-btn-max" id="btn-max-plugins" title="Full Window / Maximize" onclick="window.miraApp.maximizeToolPane('plugins')">⛶</button>
+                    <button type="button" class="win-btn close" title="Close" onclick="window.miraApp.removeToolFromSplitWorkspace('plugins')">✕</button>
+                  </div>
+                </div>
+                <div class="split-window-body" style="padding: 1.25rem; background: #0f1019; color:#ffffff; overflow-y:auto;">
+                  <div style="margin-bottom:14px;">
+                    <div style="font-size:11px; font-weight:700; color:#a489f4; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px;">Workspace Extensions</div>
+                    <h3 style="font-size:15px; font-weight:800; color:#ffffff; margin-bottom:4px;">Installed Plugins &amp; Integrations</h3>
+                    <p style="font-size:12px; color:#94a3b8;">Supercharge your split screens with connected tools.</p>
+                  </div>
+
+                  <div style="display:flex; flex-direction:column; gap:10px;">
+                    <!-- Plugin 1: Notion Sync -->
+                    <div class="plugin-store-card">
+                      <div class="plugin-store-left">
+                        <div class="plugin-store-avatar" style="background:#2d1b4e; color:#c4b5fd;">N</div>
+                        <div>
+                          <div class="plugin-store-title">Notion Bi-directional Sync</div>
+                          <div class="plugin-store-desc">Sync your daily plans, tasks, and notes directly with Notion databases.</div>
+                        </div>
+                      </div>
+                      <button type="button" class="btn-plugin-toggle active" onclick="window.miraApp.togglePluginStatus(this, 'Notion Sync')">Enabled</button>
+                    </div>
+
+                    <!-- Plugin 2: Google Drive Auto-link -->
+                    <div class="plugin-store-card">
+                      <div class="plugin-store-left">
+                        <div class="plugin-store-avatar" style="background:#3e2e0e; color:#fde047;">📁</div>
+                        <div>
+                          <div class="plugin-store-title">Google Drive Auto-Index</div>
+                          <div class="plugin-store-desc">Automatic cloud backup and PDF text extraction into Mira search.</div>
+                        </div>
+                      </div>
+                      <button type="button" class="btn-plugin-toggle active" onclick="window.miraApp.togglePluginStatus(this, 'Google Drive')">Enabled</button>
+                    </div>
+
+                    <!-- Plugin 3: Spotify Focus Ambient -->
+                    <div class="plugin-store-card">
+                      <div class="plugin-store-left">
+                        <div class="plugin-store-avatar" style="background:#0e3827; color:#6ee7b7;">🎵</div>
+                        <div>
+                          <div class="plugin-store-title">Spotify Deep Focus Audio</div>
+                          <div class="plugin-store-desc">Stream curated Lo-Fi study playlists inside Focus Sessions.</div>
+                        </div>
+                      </div>
+                      <button type="button" class="btn-plugin-toggle" onclick="window.miraApp.togglePluginStatus(this, 'Spotify Audio')">Connect</button>
+                    </div>
+
+                    <!-- Plugin 4: GitHub Copilot Workspace -->
+                    <div class="plugin-store-card">
+                      <div class="plugin-store-left">
+                        <div class="plugin-store-avatar" style="background:#1b233a; color:#93c5fd;">🐙</div>
+                        <div>
+                          <div class="plugin-store-title">GitHub Repo Sync</div>
+                          <div class="plugin-store-desc">Link sprint code commits, pull requests, and automated deployment logs.</div>
+                        </div>
+                      </div>
+                      <button type="button" class="btn-plugin-toggle" onclick="window.miraApp.togglePluginStatus(this, 'GitHub Sync')">Connect</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Minimized Windows Tray (Click any pill to restore) -->
+            <div class="minimized-windows-tray" id="minimized-windows-tray"></div>
+          </div>
+        </section>
+
+        <!-- ════════════════════════════════════════════════════════════════
+             VIEW 3: BIG TASKS & CALENDAR VIEW (Image 3)
+             ════════════════════════════════════════════════════════════════ -->
+        <section class="view-section" id="view-tasks">
+          <div class="tasks-main-container">
+
+            <!-- Header Row with Add Task Button -->
+            <div class="tasks-header-row">
+              <div>
+                <div class="tasks-eyebrow">Daily Schedule</div>
+                <h1 class="tasks-headline">Plan your day</h1>
+                <p class="tasks-subline">Inspired by Notion &amp; Google Tasks. One clear plan. Nothing noisy.</p>
+              </div>
+
+              <button type="button" class="btn-hero-primary" data-open-add-task>
+                <span>+</span> Add to plan
+              </button>
+            </div>
+
+            <!-- Body: Subnav filters & Big List / Calendar View -->
+            <div class="tasks-split-body">
+
+              <!-- Left Subnav Filter -->
+              <div class="tasks-subnav">
+                <button type="button" class="task-filter-pill active" data-filter="all">
+                  <span>All plans</span>
+                  <span class="filter-badge-count" id="badge-count-all">4</span>
+                </button>
+
+                <button type="button" class="task-filter-pill" data-filter="todo">
+                  <span>To plan</span>
+                  <span class="filter-badge-count" id="badge-count-todo">3</span>
+                </button>
+
+                <button type="button" class="task-filter-pill" data-filter="done">
+                  <span>Completed</span>
+                  <span class="filter-badge-count" id="badge-count-done">1</span>
+                </button>
+
+                <button type="button" class="task-filter-pill" data-filter="calendar">
+                  <span>Calendar Plan</span>
+                  <span class="filter-badge-count">📅</span>
+                </button>
+              </div>
+
+              <!-- Big Tasks Card -->
+              <div class="tasks-card-canvas" id="tasks-card-canvas">
+                <div class="tasks-section-header">
+                  <span class="tasks-section-title">Today's Plan</span>
+                  <span class="tasks-section-counter" id="big-tasks-counter">4 tasks</span>
+                </div>
+
+                <div class="checklist-container" id="big-tasks-list-container">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+
+              <!-- Full Calendar Tasks View (Shown when Calendar is clicked) -->
+              <div class="calendar-view-canvas" id="calendar-view-canvas">
+                <div class="cal-header-bar">
+                  <h3 style="font-size: 1.15rem; font-weight:700; color:#ffffff;">Week Schedule — October 2026</h3>
+                  <button type="button" class="btn-hero-secondary" data-open-add-task>+ Add Event</button>
+                </div>
+
+                <div class="cal-days-grid">
+                  <div class="cal-day-col">
+                    <div class="cal-day-title">Mon 6</div>
+                    <div class="cal-task-card cal-task-blue">9:30 AM · Design Handoff</div>
+                  </div>
+                  <div class="cal-day-col" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.3);">
+                    <div class="cal-day-title" style="color:#10b981;">Tue 7 (Today)</div>
+                    <div class="cal-task-card cal-task-blue">10:00 AM · Product Sync</div>
+                    <div class="cal-task-card cal-task-purple">1:30 PM · Deep Work</div>
+                    <div class="cal-task-card cal-task-blue" style="background: rgba(16, 185, 129, 0.2); color:#6ee7b7; border-color:#10b981;">
+                      6:30 PM · Physics Doubt Live
+                    </div>
+                  </div>
+                  <div class="cal-day-col">
+                    <div class="cal-day-title">Wed 8</div>
+                    <div class="cal-task-card cal-task-purple">11:00 AM · Sprint Planning</div>
+                  </div>
+                  <div class="cal-day-col">
+                    <div class="cal-day-title">Thu 9</div>
+                    <div class="cal-task-card cal-task-blue">2:00 PM · Code Review</div>
+                  </div>
+                  <div class="cal-day-col">
+                    <div class="cal-day-title">Fri 10</div>
+                    <div class="cal-task-card cal-task-purple">4:00 PM · Demo &amp; Release</div>
+                  </div>
+                  <div class="cal-day-col">
+                    <div class="cal-day-title">Sat 11</div>
+                  </div>
+                  <div class="cal-day-col">
+                    <div class="cal-day-title">Sun 12</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ════════════════════════════════════════════════════════════════
+             VIEW 4: FOCUS SESSIONS (Windows 11 Clock Inspired)
+             ════════════════════════════════════════════════════════════════ -->
+        <section class="view-section" id="view-focus">
+          <div class="focus-clock-container">
+            <div class="focus-clock-header">
+              <div class="tasks-eyebrow">Windows Clock Inspired</div>
+              <h1 class="tasks-headline">Focus Sessions</h1>
+              <p class="tasks-subline">Achieve your goals and get more done with focused, distraction-free work sessions.</p>
+            </div>
+
+            <div class="focus-session-grid">
+              <!-- Left: The Big Dial & Controls Card -->
+              <div class="focus-main-card">
+                <!-- Circular Dial -->
+                <div class="focus-dial-wrap">
+                  <svg class="focus-dial-svg" viewBox="0 0 220 220">
+                    <circle class="focus-dial-track" cx="110" cy="110" r="100" />
+                    <circle class="focus-dial-fill" id="focus-dial-fill-circle" cx="110" cy="110" r="100" />
+                  </svg>
+                  <div class="focus-dial-center">
+                    <div class="focus-time-display" id="focus-timer-digits">25:00</div>
+                    <div class="focus-status-text" id="focus-timer-status">Ready to focus</div>
+                  </div>
+                </div>
+
+                <!-- Duration Preset Chips -->
+                <div class="focus-presets-row" id="focus-presets-row">
+                  <button type="button" class="focus-preset-chip" data-focus-mins="15" onclick="window.miraApp.selectFocusDuration(15)">15 mins</button>
+                  <button type="button" class="focus-preset-chip active" data-focus-mins="25" onclick="window.miraApp.selectFocusDuration(25)">25 mins</button>
+                  <button type="button" class="focus-preset-chip" data-focus-mins="45" onclick="window.miraApp.selectFocusDuration(45)">45 mins</button>
+                  <button type="button" class="focus-preset-chip" data-focus-mins="60" onclick="window.miraApp.selectFocusDuration(60)">60 mins</button>
+                </div>
+
+                <!-- Custom Stepper -->
+                <div class="focus-stepper-wrap">
+                  <button type="button" class="focus-stepper-btn" onclick="window.miraApp.adjustFocusDuration(-5)" title="Decrease 5 minutes">−</button>
+                  <span class="focus-stepper-label" id="focus-stepper-label">25 minutes</span>
+                  <button type="button" class="focus-stepper-btn" onclick="window.miraApp.adjustFocusDuration(5)" title="Increase 5 minutes">+</button>
+                </div>
+
+                <!-- Primary Action Controls -->
+                <div class="focus-actions-row">
+                  <button type="button" class="btn-focus-start" id="btn-focus-toggle" onclick="window.miraApp.toggleFocusTimer()">
+                    <span id="btn-focus-icon">▶</span>
+                    <span id="btn-focus-label">Start focus session</span>
+                  </button>
+                  <button type="button" class="btn-focus-reset" id="btn-focus-reset" onclick="window.miraApp.resetFocusTimer()" title="Reset timer">
+                    ↺ Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right: Focus Context & Task Linker Card -->
+              <div class="focus-side-card">
+                <!-- Task Linker -->
+                <div class="focus-side-section">
+                  <div class="focus-side-title">Focus on a task</div>
+                  <div class="focus-side-sub">Link this session to your active plan from Notion &amp; Google Tasks.</div>
+                  <div class="focus-task-picker">
+                    <select class="focus-task-select" id="focus-task-select" onchange="window.miraApp.onFocusTaskChanged(this.value)">
+                      <option value="">Select a task from your plan...</option>
+                    </select>
+                    <label class="focus-task-complete-check" id="focus-task-checkbox-label" style="display:none;">
+                      <input type="checkbox" id="focus-task-checkbox" onchange="window.miraApp.completeLinkedFocusTask(this.checked)" />
+                      <span>Mark task complete when session finishes</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Daily Target & Stats -->
+                <div class="focus-side-section">
+                  <div class="focus-side-title">Daily target</div>
+                  <div class="focus-daily-meter">
+                    <div class="focus-meter-info">
+                      <span id="focus-target-count-text">1 of 4 sessions completed</span>
+                      <span id="focus-target-mins-text">25m / 100m</span>
+                    </div>
+                    <div class="focus-meter-bar-track">
+                      <div class="focus-meter-bar-fill" id="focus-target-bar-fill" style="width: 25%;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Ambient Audio / Spotify style helper -->
+                <div class="focus-side-section">
+                  <div class="focus-side-title">Background focus sound</div>
+                  <div class="focus-audio-chips">
+                    <button type="button" class="focus-audio-chip active" onclick="window.miraApp.setAmbientAudio(this, 'Silence')">🔇 Silent</button>
+                    <button type="button" class="focus-audio-chip" onclick="window.miraApp.setAmbientAudio(this, 'Lo-Fi Chill')">🎧 Lo-Fi Beats</button>
+                    <button type="button" class="focus-audio-chip" onclick="window.miraApp.setAmbientAudio(this, 'White Noise')">🌊 White Noise</button>
+                    <button type="button" class="focus-audio-chip" onclick="window.miraApp.setAmbientAudio(this, 'Gentle Rain')">🌧️ Rain</button>
+                  </div>
+                </div>
+
+                <!-- Streak Card -->
+                <div class="focus-streak-tile">
+                  <div class="streak-flame">🔥</div>
+                  <div>
+                    <div class="streak-title">3 Day Streak</div>
+                    <div class="streak-sub">You've completed 7 focus sessions this week!</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ════════════════════════════════════════════════════════════════
+             VIEW 6: ALL TOOLS SHOWCASE & ANIMATIONS (Task 5)
+             ════════════════════════════════════════════════════════════════ -->
+        <section class="view-section" id="view-tools">
+          <div class="tools-showcase-container">
+            <div>
+              <div class="tasks-eyebrow">Mira Studio Engine</div>
+              <h1 class="tasks-headline">Integrated Tools</h1>
+              <p class="tasks-subline">Every tool connects natively into your workspace canvas with multi-split support.</p>
+            </div>
+
+            <div class="tools-grid-showcase">
+              <!-- Tool: Docs -->
+              <div class="tool-card-interactive" onclick="window.miraApp.addToolToSplitWorkspace('docs')">
+                <div class="tool-card-icon-wrap" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">
+                  <span style="font-size:24px;">📄</span>
+                </div>
+                <div>
+                  <div class="tool-card-name">Docs</div>
+                  <div class="tool-card-desc">Rich document editor with real-time multi-cursor collaboration and Markdown support.</div>
+                </div>
+                <div class="tool-card-footer">
+                  <span>Open in Split View</span>
+                  <span>&rarr;</span>
+                </div>
+              </div>
+
+              <!-- Tool: Sheets -->
+              <div class="tool-card-interactive" onclick="window.miraApp.addToolToSplitWorkspace('sheets')">
+                <div class="tool-card-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                  <span style="font-size:24px;">📊</span>
+                </div>
+                <div>
+                  <div class="tool-card-name">Sheets</div>
+                  <div class="tool-card-desc">Dynamic tabular computation, formula calculation, and attendance analytics.</div>
+                </div>
+                <div class="tool-card-footer">
+                  <span>Open in Split View</span>
+                  <span>&rarr;</span>
+                </div>
+              </div>
+
+              <!-- Tool: Slides -->
+              <div class="tool-card-interactive" onclick="window.miraApp.addToolToSplitWorkspace('slides')">
+                <div class="tool-card-icon-wrap" style="background: rgba(249, 115, 22, 0.15); color: #f97316;">
+                  <span style="font-size:24px;">📽️</span>
+                </div>
+                <div>
+                  <div class="tool-card-name">Slides</div>
+                  <div class="tool-card-desc">Interactive lecture decks, pitch presentations, and live projector synchronization.</div>
+                </div>
+                <div class="tool-card-footer">
+                  <span>Open in Split View</span>
+                  <span>&rarr;</span>
+                </div>
+              </div>
+
+              <!-- Tool: Drive -->
+              <div class="tool-card-interactive" onclick="window.miraApp.addToolToSplitWorkspace('drive')">
+                <div class="tool-card-icon-wrap" style="background: rgba(234, 179, 8, 0.15); color: #eab308;">
+                  <span style="font-size:24px;">📁</span>
+                </div>
+                <div>
+                  <div class="tool-card-name">Drive</div>
+                  <div class="tool-card-desc">Unified cloud file system indexing all your study notes, assets, and project files.</div>
+                </div>
+                <div class="tool-card-footer">
+                  <span>Open in Split View</span>
+                  <span>&rarr;</span>
+                </div>
+              </div>
+
+              <!-- Tool: PDFMail -->
+              <div class="tool-card-interactive" onclick="window.miraApp.addToolToSplitWorkspace('mail')">
+                <div class="tool-card-icon-wrap" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                  <span style="font-size:24px;">✉️</span>
+                </div>
+                <div>
+                  <div class="tool-card-name">PDFMail</div>
+                  <div class="tool-card-desc">Distribute graded assignments, newsletters, and PDF lecture briefs directly to students.</div>
+                </div>
+                <div class="tool-card-footer">
+                  <span>Open in Split View</span>
+                  <span>&rarr;</span>
+                </div>
+              </div>
+
+              <!-- Tool: Chat -->
+              <div class="tool-card-interactive" onclick="window.miraApp.addToolToSplitWorkspace('chat')">
+                <div class="tool-card-icon-wrap" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
+                  <span style="font-size:24px;">💬</span>
+                </div>
+                <div>
+                  <div class="tool-card-name">Chat</div>
+                  <div class="tool-card-desc">Instant team channels, topic threads, and student group messaging.</div>
+                </div>
+                <div class="tool-card-footer">
+                  <span>Open in Split View</span>
+                  <span>&rarr;</span>
+                </div>
+              </div>
+
+              <!-- Tool: Meet -->
+              <div class="tool-card-interactive" onclick="window.miraApp.addToolToSplitWorkspace('meet')">
+                <div class="tool-card-icon-wrap" style="background: rgba(5, 150, 105, 0.15); color: #059669;">
+                  <span style="font-size:24px;">📹</span>
+                </div>
+                <div>
+                  <div class="tool-card-name">Meet</div>
+                  <div class="tool-card-desc">One-click encrypted video calls with screen sharing, breakout rooms, and AI summaries.</div>
+                </div>
+                <div class="tool-card-footer">
+                  <span>Open in Split View</span>
+                  <span>&rarr;</span>
+                </div>
+              </div>
+
+              <!-- Tool: Host -->
+              <div class="tool-card-interactive" onclick="window.miraApp.openModal('modal-kn-live')">
+                <div class="tool-card-icon-wrap" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">
+                  <span style="font-size:24px;">🎙️</span>
+                </div>
+                <div>
+                  <div class="tool-card-name">Host Studio</div>
+                  <div class="tool-card-desc">Faculty broadcast suite for holding webinars, town halls, and moderated lectures.</div>
+                </div>
+                <div class="tool-card-footer">
+                  <span>Launch Host Studio</span>
+                  <span>&rarr;</span>
+                </div>
+              </div>
+
+              <!-- Tool: Projects -->
+              <div class="tool-card-interactive" onclick="window.miraApp.switchView('tasks')">
+                <div class="tool-card-icon-wrap" style="background: rgba(99, 102, 241, 0.15); color: #6366f1;">
+                  <span style="font-size:24px;">📌</span>
+                </div>
+                <div>
+                  <div class="tool-card-name">Projects</div>
+                  <div class="tool-card-desc">Kanban boards, milestone roadmaps, and automated sprint flow tracking.</div>
+                </div>
+                <div class="tool-card-footer">
+                  <span>View Project Board</span>
+                  <span>&rarr;</span>
+                </div>
+              </div>
+
+              <!-- Tool: Mira AI -->
+              <div class="tool-card-interactive" onclick="window.miraAi?.toggleDrawer()">
+                <div class="tool-card-icon-wrap" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
+                  <span style="font-size:24px;">✨</span>
+                </div>
+                <div>
+                  <div class="tool-card-name">Mira AI Assistant</div>
+                  <div class="tool-card-desc">Your intelligent workflow copilot for prioritizing your day and solving complex queries.</div>
+                </div>
+                <div class="tool-card-footer">
+                  <span>Ask Mira</span>
+                  <span>&rarr;</span>
+                </div>
+              </div>
+
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MIRA AI COPILOT: SPLIT SCREEN SIDEBAR (Microsoft Copilot Style)
+       Permanently docked to the left bar above Help & FAQ
+       ══════════════════════════════════════════════════════════════════ -->
+
+  <!-- Split Screen Right Sidebar (Microsoft Copilot Style) -->
+  <aside class="mira-copilot-sidebar" id="mira-copilot-sidebar" role="dialog" aria-label="Mira Copilot">
+    <!-- Header -->
+    <div class="copilot-header">
+      <div class="copilot-header-left">
+        <div class="copilot-avatar-square">
+          <img src="/mira-ai-character.png" alt="Mira" />
+        </div>
+        <div class="copilot-title-group">
+          <span class="copilot-title-name">Mira Copilot</span>
+          <span class="copilot-title-status">Online &amp; Ready</span>
+        </div>
+      </div>
+      <div class="copilot-header-actions">
+        <button type="button" class="copilot-icon-btn" id="copilot-new-chat-btn" title="New Topic / Clear">+</button>
+        <button type="button" class="copilot-icon-btn" title="Settings">···</button>
+        <button type="button" class="copilot-icon-btn" id="copilot-close-btn" title="Close Copilot">✕</button>
+      </div>
     </div>
 
     <!-- Quick Prompt Chips -->
-    <div class="ai-prompt-chips">
-      <button type="button" class="ai-chip" data-mira-prompt="brainstorm">✨ Brainstorm</button>
-      <button type="button" class="ai-chip" data-mira-prompt="plan">📋 Plan Day</button>
-      <button type="button" class="ai-chip" data-mira-prompt="chat">💬 Workspace FAQ</button>
+    <div class="copilot-chips-bar">
+      <button type="button" class="copilot-chip" data-mira-prompt="brainstorm">✨ Brainstorm</button>
+      <button type="button" class="copilot-chip" data-mira-prompt="plan">📋 Plan Day</button>
+      <button type="button" class="copilot-chip" data-mira-prompt="chat">📄 Docs &amp; Notes</button>
+      <button type="button" class="copilot-chip" onclick="window.miraApp?.switchView('knownext')">🔒 KnowNext</button>
     </div>
 
     <!-- Messages Container -->
-    <div class="ai-chat-messages" id="ai-chat-messages"></div>
+    <div class="copilot-messages-viewport" id="copilot-chat-messages"></div>
 
-    <!-- Input Footer -->
-    <div class="ai-chat-footer">
-      <input type="text" class="ai-chat-input" id="ai-chat-input" placeholder="Ask Mira anything..." />
-      <button type="button" class="ai-chat-send" id="ai-send-btn" aria-label="Send">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="22" y1="2" x2="11" y2="13"/>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════════════════════════════════
-       PAGE 1: HERO PAGE (From User Image 1)
-       ══════════════════════════════════════════════════════════════════ -->
-  <header class="section-hero" id="page-1">
-
-    <!-- Floating Pill Navigation Bar -->
-    <nav class="hero-nav">
-      <a href="/" class="nav-brand-left">
-        <img src="/assets/Mira%20Logo%201-yw3WC1ee.png" alt="Mira Logo" />
-        <span class="nav-brand-title">Mira</span>
-      </a>
-
-      <ul class="nav-center-links">
-        <li><a href="#page-3">Tools</a></li>
-        <li><a href="#page-2">How it works</a></li>
-        <li><a href="#page-4">Pricing</a></li>
-      </ul>
-
-      <!-- Popup button triggers auth modal -->
-      <button class="btn-nav-getstarted" data-open-modal="signup">
-        Get started &rarr;
-      </button>
-    </nav>
-
-    <!-- Translucent Light Hero Card -->
-    <div class="hero-card-container">
-      <div class="hero-top-pill">
-        <span>✨</span> The modern operating system for your work.
-      </div>
-
-      <h1 class="hero-title-main">
-        One workspace for<br />
-        <em>everything you do.</em>
-      </h1>
-
-      <p class="hero-subhead-bold">
-        Think, create, and organize. Seamlessly.
-      </p>
-
-      <p class="hero-desc-text">
-        Mira brings your projects, conversations, calendar, and knowledge into one vibrant home for your ideas.
-      </p>
-
-      <div class="hero-actions-row">
-        <!-- Get Started Popup Button -->
-        <button class="btn-hero-purple" data-open-modal="signup">
-          Get started &rarr;
+    <!-- Copilot Input Area -->
+    <div class="copilot-input-area">
+      <form id="copilot-form" class="copilot-input-pill" onsubmit="window.miraAi?.handleFormSubmit(event)">
+        <button type="button" class="copilot-btn-plus-context" title="Add context / attachments">+</button>
+        <input type="text" class="copilot-input-field" id="copilot-input-field" placeholder="Message Mira Copilot..." autocomplete="off" />
+        <button type="submit" class="copilot-btn-send" id="copilot-send-btn" aria-label="Send message">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
         </button>
-
-        <!-- Smooth Scroll to Scanner Page -->
-        <a href="#page-2" class="btn-hero-glass">
-          <span>▶</span> See how it works
-        </a>
-      </div>
-
-      <p class="hero-footer-note">
-        Free for up to 5 people · No credit card required
-      </p>
+      </form>
+      <div class="copilot-disclaimer">Mira AI can make mistakes. Verify important workspace &amp; academic information.</div>
     </div>
-
-  </header>
+  </aside>
 
   <!-- ══════════════════════════════════════════════════════════════════
-       PAGE 2: SCANNER — WEBSITE IMAGE BOX (From User Image 2)
+       MODALS & DIALOGS
        ══════════════════════════════════════════════════════════════════ -->
-  <section class="section-scanner" id="page-2">
 
-    <!-- Scanner Box Container showcasing the website image -->
-    <div class="scanner-box-wrapper" data-open-modal="signup" title="Click to launch interactive workspace">
-      <!-- Window Title Bar -->
-      <div class="scanner-top-bar">
-        <div class="scanner-dots">
-          <span class="scanner-dot r"></span>
-          <span class="scanner-dot y"></span>
-          <span class="scanner-dot g"></span>
+  <!-- Modal 1: Add Task Modal -->
+  <div class="mira-modal-overlay" id="modal-add-task">
+    <div class="mira-modal-dialog">
+      <div class="modal-header-row">
+        <h3 class="modal-title">+ Add to Plan</h3>
+        <button type="button" class="modal-close-btn">&times;</button>
+      </div>
+      <form id="form-add-task">
+        <div class="mira-form-group">
+          <label class="mira-form-label">Plan Item / Task Title</label>
+          <input type="text" class="mira-form-input" id="task-input-title" placeholder="e.g. Prepare lecture presentation" required />
         </div>
-        <div class="scanner-title-badge">
-          <span>🟢</span> Mira Workspace OS — Good morning, Alex.
+        <div class="mira-form-group">
+          <label class="mira-form-label">Priority Level</label>
+          <select class="mira-form-select" id="task-input-priority">
+            <option value="high">High priority (Red)</option>
+            <option value="medium" selected>Medium priority (Yellow)</option>
+            <option value="low">Low priority (Green)</option>
+          </select>
         </div>
-        <div style="font-size:0.75rem; color:rgba(255,255,255,0.4); font-weight:600;">
-          Live Preview
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:1.5rem;">
+          <button type="button" class="btn-hero-secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="btn-hero-primary">Save to Plan</button>
         </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: KnowNext Anonymous Ask a Doubt Modal -->
+  <div class="mira-modal-overlay" id="modal-ask-doubt">
+    <div class="mira-modal-dialog">
+      <div class="modal-header-row">
+        <h3 class="modal-title">Ask a Doubt on KnowNext</h3>
+        <button type="button" class="modal-close-btn">&times;</button>
       </div>
 
-      <!-- Website Dashboard Image -->
-      <img
-        src="/images/dashboard-preview.png"
-        alt="Mira Workspace Operating System Screen"
-        class="scanner-preview-img"
-      />
-    </div>
+      <div class="anon-badge-callout">
+        <span>🔒</span>
+        <span>Posting as <strong>Anonymous (Roll No: #23CS048)</strong>. Your real identity is never exposed to peers or instructors.</span>
+      </div>
 
-  </section>
+      <form id="form-ask-doubt">
+        <div class="mira-form-group">
+          <label class="mira-form-label">Subject / Topic</label>
+          <select class="mira-form-select" id="doubt-subject">
+            <option value="Physics">Physics — Mechanics &amp; Electromagnetism</option>
+            <option value="Mathematics">Mathematics — Calculus &amp; Linear Algebra</option>
+            <option value="Computer Science">Computer Science — Algorithms &amp; Data Structures</option>
+            <option value="Chemistry">Chemistry — Organic Reactions</option>
+          </select>
+        </div>
+
+        <div class="mira-form-group">
+          <label class="mira-form-label">Describe your question or roadblock</label>
+          <textarea class="mira-form-textarea" id="doubt-text" rows="4" placeholder="Be specific so peer tutors and teachers can explain step-by-step..." required></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:1.5rem;">
+          <button type="button" class="btn-hero-secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="btn-hero-primary" style="background:#743eed;">Broadcast Doubt</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- ══════════════════════════════════════════════════════════════════
-       PAGE 3: FEATURES (From User Image 3)
+       DOCK FLYOUT 1: NOTIFICATIONS PANEL (Reference Image 1)
+       Positioned directly next to left sidebar icon (non-blocking)
        ══════════════════════════════════════════════════════════════════ -->
-  <section class="section-features" id="page-3">
-
-    <!-- Section Header Row -->
-    <div class="features-header-row">
-      <div>
-        <div class="feat-eyebrow">EVERYTHING IN ONE PLACE</div>
-        <h2 class="feat-main-headline">
-          One workspace.<br />
-          Every way you work.
-        </h2>
+  <aside class="dock-flyout-panel" id="panel-dock-notifications" role="region" aria-label="Notifications Panel">
+    <div class="dock-flyout-header">
+      <div class="dock-flyout-header-title">
+        <span style="font-size: 20px;">🔔</span>
+        <span>Notification</span>
       </div>
-
-      <p class="feat-header-desc">
-        Stop switching between a dozen tabs. Mira gives every part of your work a shared home—connected, searchable, and always in sync.
-      </p>
+      <div class="dock-flyout-header-actions">
+        <button type="button" class="dock-flyout-action-link" onclick="window.miraApp.markAllNotificationsRead()" title="Mark all as read">Mark read</button>
+        <button type="button" class="dock-flyout-close-btn" onclick="window.miraApp.closeDockPanels()" title="Close">&times;</button>
+      </div>
     </div>
 
-    <!-- 4 Clean Feature Cards -->
-    <div class="features-cards-grid">
-
-      <!-- Card 1: Project management -->
-      <div class="feature-clean-card">
-        <div class="feat-icon-sq orange">
-          <span>📋</span>
-        </div>
-        <h3 class="feat-card-title">Project management</h3>
-        <p class="feat-card-body">
-          Plan, prioritize, and ship your best work with a flexible task system.
-        </p>
-        <a href="#page-4" class="feat-card-link">
-          Explore &rarr;
-        </a>
-      </div>
-
-      <!-- Card 2: Team conversations -->
-      <div class="feature-clean-card">
-        <div class="feat-icon-sq blue">
-          <span>💬</span>
-        </div>
-        <h3 class="feat-card-title">Team conversations</h3>
-        <p class="feat-card-body">
-          Keep decisions close to the work, not scattered across endless threads.
-        </p>
-        <a href="#page-4" class="feat-card-link">
-          Explore &rarr;
-        </a>
-      </div>
-
-      <!-- Card 3: Smart scheduling -->
-      <div class="feature-clean-card">
-        <div class="feat-icon-sq green">
-          <span>📅</span>
-        </div>
-        <h3 class="feat-card-title">Smart scheduling</h3>
-        <p class="feat-card-body">
-          Protect your focus time and bring your team together without the back-and-forth.
-        </p>
-        <a href="#page-4" class="feat-card-link">
-          Explore &rarr;
-        </a>
-      </div>
-
-      <!-- Card 4: Docs & knowledge -->
-      <div class="feature-clean-card">
-        <div class="feat-icon-sq yellow">
-          <span>📄</span>
-        </div>
-        <h3 class="feat-card-title">Docs &amp; knowledge</h3>
-        <p class="feat-card-body">
-          Turn ideas into shared knowledge your whole workspace can access.
-        </p>
-        <a href="#page-4" class="feat-card-link">
-          Explore &rarr;
-        </a>
-      </div>
-
+    <!-- Filter chips -->
+    <div class="dock-flyout-filter-bar">
+      <button type="button" class="dock-chip-btn active" id="chip-notif-all" onclick="window.miraApp.filterNotifications('all')">All (4)</button>
+      <button type="button" class="dock-chip-btn" id="chip-notif-unread" onclick="window.miraApp.filterNotifications('unread')">Unread (2)</button>
+      <button type="button" class="dock-chip-btn" id="chip-notif-mentions" onclick="window.miraApp.filterNotifications('mentions')">Mentions</button>
     </div>
 
-  </section>
+    <!-- Scrollable list of notifications -->
+    <div class="dock-flyout-scrollable" id="dock-notif-list">
+      <!-- Item 1: Docs -->
+      <div class="notif-card-item unread" data-notif-cat="unread" onclick="window.miraApp.handleNotificationClick('docs', this)">
+        <div class="notif-card-header">
+          <span class="notif-card-badge">📄 Mira Docs</span>
+          <span>15m ago</span>
+        </div>
+        <div class="notif-card-title">Maya Chen shared Launch Review notes</div>
+        <div class="notif-card-sub">Added 3 comments on product release roadmap · Click to open</div>
+      </div>
+
+      <!-- Item 2: KnowNext -->
+      <div class="notif-card-item unread" data-notif-cat="unread mentions" onclick="window.miraApp.handleNotificationClick('knownext', this)">
+        <div class="notif-card-header">
+          <span class="notif-card-badge" style="color: #c084fc;">🔒 KnowNext Doubt</span>
+          <span>28m ago</span>
+        </div>
+        <div class="notif-card-title">Peer Tutor answered your physics question</div>
+        <div class="notif-card-sub">Roll #23EE102 replied: "Fermat's principle of least time..."</div>
+      </div>
+
+      <!-- Item 3: Sheets -->
+      <div class="notif-card-item" data-notif-cat="read" onclick="window.miraApp.handleNotificationClick('sheets', this)">
+        <div class="notif-card-header">
+          <span class="notif-card-badge" style="color: #34d399;">📊 Sheets Studio</span>
+          <span>1h ago</span>
+        </div>
+        <div class="notif-card-title">Batch A Attendance Summary generated</div>
+        <div class="notif-card-sub">32 / 38 students marked present. Ready for CSV export.</div>
+      </div>
+
+      <!-- Item 4: Calendar -->
+      <div class="notif-card-item" data-notif-cat="read" onclick="window.miraApp.handleNotificationClick('calendar', this)">
+        <div class="notif-card-header">
+          <span class="notif-card-badge" style="color: #818cf8;">📅 Schedule Sync</span>
+          <span>Scheduled</span>
+        </div>
+        <div class="notif-card-title">Physics Live Session starts at 6:30 PM</div>
+        <div class="notif-card-sub">Hosted by Arjun Mishra with 10 peer students enrolled.</div>
+      </div>
+    </div>
+  </aside>
 
   <!-- ══════════════════════════════════════════════════════════════════
-       PAGE 4: GET STARTED & FOOTER (From User Image 4)
+       DOCK FLYOUT 2: SEARCH PANEL (Reference Image 2)
+       Positioned directly next to left sidebar icon (non-blocking)
        ══════════════════════════════════════════════════════════════════ -->
-  <section class="section-getstarted" id="page-4">
-
-    <!-- Pastel Aurora Card -->
-    <div class="cta-card-aurora">
-      <div class="cta-sparkle-pill">
-        <span>✨</span>
+  <aside class="dock-flyout-panel" id="panel-dock-search" role="region" aria-label="Search Workspace">
+    <!-- Top Pill Search Bar (Reference Image 2) -->
+    <div class="dock-search-top-bar">
+      <div class="dock-search-box-pill">
+        <span class="dock-search-glass">🔍</span>
+        <input type="text" class="dock-search-input" id="dock-search-input-field" placeholder="Search workspace, tools, docs..." autocomplete="off" oninput="window.miraApp.handleDockSearch(this.value)" />
+        <button type="button" class="dock-search-clear" id="dock-search-clear-btn" onclick="window.miraApp.clearDockSearch()" title="Clear or close search">&times;</button>
       </div>
-
-      <h2 class="cta-card-title">
-        Make space for your best work.
-      </h2>
-
-      <p class="cta-card-desc">
-        Join thousands of professionals simplifying their workday with Mira. Start free, invite your team when you're ready.
-      </p>
-
-      <!-- Popup Trigger Button -->
-      <button class="btn-cta-large" data-open-modal="signup">
-        Get started &rarr;
-      </button>
     </div>
 
-    <!-- Clean Footer Bar -->
-    <footer class="clean-footer">
-      <div class="footer-brand-left">
-        <img src="/assets/Mira%20Logo%201-yw3WC1ee.png" alt="Mira Logo" />
-        <span>Mira</span>
+    <!-- Quick Filter Tags -->
+    <div class="dock-flyout-filter-bar">
+      <button type="button" class="dock-chip-btn active" data-search-tag="all" onclick="window.miraApp.setSearchCategory('all', this)">All</button>
+      <button type="button" class="dock-chip-btn" data-search-tag="tools" onclick="window.miraApp.setSearchCategory('tools', this)">Tools</button>
+      <button type="button" class="dock-chip-btn" data-search-tag="tasks" onclick="window.miraApp.setSearchCategory('tasks', this)">Tasks</button>
+      <button type="button" class="dock-chip-btn" data-search-tag="docs" onclick="window.miraApp.setSearchCategory('docs', this)">Docs</button>
+    </div>
+
+    <!-- Live Search Results List -->
+    <div class="dock-flyout-scrollable" id="dock-search-results-list">
+      <!-- Generated dynamically by miraApp.renderSearchResults() -->
+    </div>
+  </aside>
+
+  <!-- Modal 5: Tutor Directory -->
+  <div class="mira-modal-overlay" id="modal-kn-tutors">
+    <div class="mira-modal-dialog">
+      <div class="modal-header-row">
+        <h3 class="modal-title">Verified Tutors Directory</h3>
+        <button type="button" class="modal-close-btn">&times;</button>
       </div>
-
-      <div class="footer-copyright">
-        &copy; 2026 Mira, Inc. Work brilliantly.
-      </div>
-
-      <ul class="footer-links-right">
-        <li><a href="#privacy">Privacy</a></li>
-        <li><a href="#terms">Terms</a></li>
-        <li><a href="#page-1">Contact</a></li>
-      </ul>
-    </footer>
-
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════════════════
-       POPUP SIGN IN & SIGN UP MODAL + ONBOARDING QUESTIONS
-       ══════════════════════════════════════════════════════════════════ -->
-  <div class="modal-backdrop" id="auth-modal" aria-hidden="true">
-    <div class="modal-container" role="dialog" aria-modal="true">
-      <button class="modal-close-btn" id="modal-close" aria-label="Close modal">&times;</button>
-      <div class="modal-content">
-
-        <!-- ── STEP 1: AUTH (Sign Up / Sign In Tabs) ── -->
-        <div class="modal-step active" id="step-auth">
-          <div class="auth-header">
-            <h3>Welcome to Mira</h3>
-            <p>Access your workspace and start organizing your work</p>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#1c1d29; padding:12px 14px; border-radius:10px;">
+          <div>
+            <div style="font-weight:700; color:#ffffff;">Dr. H. Sharma</div>
+            <div style="font-size:12px; color:#94a3b8;">Physics &amp; Mechanics · ⭐ 4.9 (124 reviews)</div>
           </div>
-
-          <div class="auth-tabs">
-            <button class="auth-tab-btn active" data-tab="signup">Sign Up</button>
-            <button class="auth-tab-btn" data-tab="signin">Sign In</button>
-          </div>
-
-          <!-- SIGN UP PANE -->
-          <div class="pane" id="pane-signup">
-            <div class="form-error hidden" id="signup-error"></div>
-            <form id="form-signup">
-              <div class="form-group">
-                <label for="signup-name">Full Name</label>
-                <input type="text" id="signup-name" class="form-control" placeholder="Jane Doe" required />
-              </div>
-              <div class="form-group">
-                <label for="signup-email">Email Address</label>
-                <input type="email" id="signup-email" class="form-control" placeholder="jane@example.com" required />
-              </div>
-              <div class="form-group">
-                <label for="signup-password">Password</label>
-                <input type="password" id="signup-password" class="form-control" placeholder="At least 8 characters" minlength="8" required />
-              </div>
-              <div class="form-group">
-                <label for="signup-confirm">Confirm Password</label>
-                <input type="password" id="signup-confirm" class="form-control" placeholder="Re-enter password" minlength="8" required />
-              </div>
-              <button type="submit" class="btn-submit" id="btn-signup">Create Account &rarr;</button>
-            </form>
-          </div>
-
-          <!-- SIGN IN PANE -->
-          <div class="pane hidden" id="pane-signin">
-            <div class="form-error hidden" id="signin-error"></div>
-            <form id="form-signin">
-              <div class="form-group">
-                <label for="signin-email">Email Address</label>
-                <input type="email" id="signin-email" class="form-control" placeholder="jane@example.com" required />
-              </div>
-              <div class="form-group">
-                <label for="signin-password">Password</label>
-                <input type="password" id="signin-password" class="form-control" placeholder="Your password" required />
-              </div>
-              <button type="submit" class="btn-submit" id="btn-signin">Sign In &rarr;</button>
-            </form>
-            <div class="auth-links">
-              <a href="#" id="link-forgot">Forgot your password?</a>
-            </div>
-          </div>
+          <button type="button" class="btn-hero-primary" style="padding:6px 14px; font-size:12px;" onclick="window.miraApp.triggerSavedNotification('1-on-1 session booked with Dr. Sharma'); document.getElementById('modal-kn-tutors').classList.remove('open');">Connect</button>
         </div>
-
-        <!-- ── STEP 1b: CONFIRM EMAIL (If email verification enabled) ── -->
-        <div class="modal-step" id="step-confirm-email">
-          <div class="welcome-container">
-            <div class="welcome-icon">✉️</div>
-            <h3 class="question-title">Check your inbox</h3>
-            <p class="question-goal" style="margin-top:0.5rem;">
-              We sent a verification link to your email. Click it to verify your account and continue.
-            </p>
-            <button class="btn-submit" onclick="closeModal()">Got it</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#1c1d29; padding:12px 14px; border-radius:10px;">
+          <div>
+            <div style="font-weight:700; color:#ffffff;">Sarah Jenkins</div>
+            <div style="font-size:12px; color:#94a3b8;">Algorithms &amp; Discrete Math · ⭐ 5.0 (88 reviews)</div>
           </div>
+          <button type="button" class="btn-hero-primary" style="padding:6px 14px; font-size:12px;" onclick="window.miraApp.triggerSavedNotification('1-on-1 session booked with Sarah'); document.getElementById('modal-kn-tutors').classList.remove('open');">Connect</button>
         </div>
-
-        <!-- ── STEP 2: QUESTION 1 (ROLE) ── -->
-        <div class="modal-step" id="step-q1">
-          <div class="step-indicator">
-            <div class="step-dot active"></div>
-            <div class="step-dot"></div>
-            <div class="step-dot"></div>
-          </div>
-          <h3 class="question-title">What primary role describes you best?</h3>
-          <p class="question-goal">Goal: Identify user persona and permissions.</p>
-
-          <div class="option-grid">
-            <div class="option-card" onclick="selectOption('role', 'student', this)">
-              <div class="option-icon">🎓</div>
-              <div class="option-text-wrap">
-                <div class="option-name">Student</div>
-                <div class="option-sub">Learn, track tasks &amp; ask doubts</div>
-              </div>
-            </div>
-            <div class="option-card" onclick="selectOption('role', 'teacher', this)">
-              <div class="option-icon">👨‍🏫</div>
-              <div class="option-text-wrap">
-                <div class="option-name">Teacher / Educator</div>
-                <div class="option-sub">Manage attendance, classes &amp; discussions</div>
-              </div>
-            </div>
-            <div class="option-card" onclick="selectOption('role', 'professional', this)">
-              <div class="option-icon">💼</div>
-              <div class="option-text-wrap">
-                <div class="option-name">Working Professional</div>
-                <div class="option-sub">Organize meetings, documents &amp; daily workflow</div>
-              </div>
-            </div>
-            <div class="option-card" onclick="selectOption('role', 'personal', this)">
-              <div class="option-icon">🚀</div>
-              <div class="option-text-wrap">
-                <div class="option-name">Personal / Freelancer</div>
-                <div class="option-sub">Solo workspace, projects &amp; continuous learning</div>
-              </div>
-            </div>
-          </div>
-
-          <button class="btn-submit" id="next-q1" onclick="goToStep('role', 'q2')" disabled>Continue &rarr;</button>
-        </div>
-
-        <!-- ── STEP 3: QUESTION 2 (MAIN GOAL) ── -->
-        <div class="modal-step" id="step-q2">
-          <div class="step-indicator">
-            <div class="step-dot active"></div>
-            <div class="step-dot active"></div>
-            <div class="step-dot"></div>
-          </div>
-          <h3 class="question-title">What is your main goal for using Mira today?</h3>
-          <p class="question-goal">Goal: Pre-configure your workspace layout &amp; suggestions.</p>
-
-          <div class="option-grid">
-            <div class="option-card" onclick="selectOption('goal', 'tasks_meetings', this)">
-              <div class="option-icon">🗓️</div>
-              <div class="option-text-wrap">
-                <div class="option-name">Organizing everyday tasks &amp; meetings</div>
-                <div class="option-sub">Mira Workspace</div>
-              </div>
-            </div>
-            <div class="option-card" onclick="selectOption('goal', 'pdfs_docs', this)">
-              <div class="option-icon">📂</div>
-              <div class="option-text-wrap">
-                <div class="option-name">Storing and summarizing PDFs / documents</div>
-                <div class="option-sub">Mira Workspace</div>
-              </div>
-            </div>
-            <div class="option-card" onclick="selectOption('goal', 'ask_answer', this)">
-              <div class="option-icon">💡</div>
-              <div class="option-text-wrap">
-                <div class="option-name">Asking &amp; answering academic questions</div>
-                <div class="option-sub">KnowNext Community</div>
-              </div>
-            </div>
-            <div class="option-card" onclick="selectOption('goal', 'teach_manage', this)">
-              <div class="option-icon">👥</div>
-              <div class="option-text-wrap">
-                <div class="option-name">Teaching &amp; managing student discussions</div>
-                <div class="option-sub">KnowNext Community</div>
-              </div>
-            </div>
-          </div>
-
-          <button class="btn-submit" id="next-q2" onclick="goToStep('goal', 'q3')" disabled>Continue &rarr;</button>
-        </div>
-
-        <!-- ── STEP 4: QUESTION 3 (WHERE SPEND TIME) ── -->
-        <div class="modal-step" id="step-q3">
-          <div class="step-indicator">
-            <div class="step-dot active"></div>
-            <div class="step-dot active"></div>
-            <div class="step-dot active"></div>
-          </div>
-          <h3 class="question-title">Where will you spend most of your time?</h3>
-          <p class="question-goal">Goal: Direct you to the right landing screen upon login.</p>
-
-          <div class="option-grid">
-            <div class="option-card" onclick="selectOption('workspace', 'mira', this)">
-              <div class="option-icon">📋</div>
-              <div class="option-text-wrap">
-                <div class="option-name">My Personal Workspace</div>
-                <div class="option-sub">Mira Workspace</div>
-              </div>
-            </div>
-            <div class="option-card" onclick="selectOption('workspace', 'knowNext', this)">
-              <div class="option-icon">🌐</div>
-              <div class="option-text-wrap">
-                <div class="option-name">The Learning Community</div>
-                <div class="option-sub">KnowNext Community</div>
-              </div>
-            </div>
-            <div class="option-card" onclick="selectOption('workspace', 'both', this)">
-              <div class="option-icon">⚡</div>
-              <div class="option-text-wrap">
-                <div class="option-name">Both equally</div>
-                <div class="option-sub">Unified dashboard</div>
-              </div>
-            </div>
-          </div>
-
-          <button class="btn-submit" id="next-q3" onclick="goToStep('workspace', 'welcome')" disabled>Complete Setup &rarr;</button>
-        </div>
-
-        <!-- ── STEP 5: WELCOME / ONBOARDING COMPLETED ── -->
-        <div class="modal-step" id="step-welcome">
-          <div class="welcome-container">
-            <div class="welcome-icon">🎉</div>
-            <h3 class="question-title">You're all set!</h3>
-            <p class="question-goal" style="margin-top:0.5rem;">
-              Your profile has been saved. Your workspace is customized and ready.
-            </p>
-
-            <button class="btn-submit" onclick="window.location.href='/dashboard.html'">Go to Dashboard &rarr;</button>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
 
-  <!-- Vite module entry: auth & popup handling -->
+  <!-- Modal 6: Live Class / Session Room -->
+  <div class="mira-modal-overlay" id="modal-live-room">
+    <div class="mira-modal-dialog" style="max-width: 650px;">
+      <div class="modal-header-row">
+        <h3 class="modal-title">Live Physics Study Session</h3>
+        <button type="button" class="modal-close-btn">&times;</button>
+      </div>
+      <div style="height: 280px; background:#0c0d14; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; border: 1px solid rgba(255,255,255,0.08); margin-bottom:1.5rem; position:relative; overflow:hidden;">
+        <div style="font-size: 40px; margin-bottom:0.5rem;">👨‍🏫</div>
+        <div style="font-weight:700; font-size:1.1rem; color:#ffffff;">Arjun Mishra is presenting</div>
+        <div style="font-size:12px; color:#10b981; margin-top:4px;">● Live Streaming (10 participants)</div>
+        <div style="position:absolute; bottom:12px; display:flex; gap:8px;">
+          <button type="button" class="sheet-tool-btn" style="background:#1f2937; color:#ffffff; border:none;" onclick="window.miraApp.triggerSavedNotification('Microphone muted');">🎤 Mute</button>
+          <button type="button" class="sheet-tool-btn" style="background:#1f2937; color:#ffffff; border:none;" onclick="window.miraApp.triggerSavedNotification('Camera toggled');">📹 Video</button>
+          <button type="button" class="sheet-tool-btn" style="background:#ef4444; color:#ffffff; border:none;" onclick="document.getElementById('modal-live-room').classList.remove('open');">Leave Room</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 7: Study Together Rooms -->
+  <div class="mira-modal-overlay" id="modal-kn-study">
+    <div class="mira-modal-dialog">
+      <div class="modal-header-row">
+        <h3 class="modal-title">Focused Peer Study Rooms</h3>
+        <button type="button" class="modal-close-btn">&times;</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="background:#1a1b27; padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; color:#ffffff;">Calculus &amp; Optimization Study Pod</div>
+            <div style="font-size:12px; color:#10b981;">● 6 students studying now</div>
+          </div>
+          <button type="button" class="btn-hero-primary" style="padding:6px 14px; font-size:12px;" onclick="window.miraApp.triggerSavedNotification('Joined Calculus Study Pod'); document.getElementById('modal-kn-study').classList.remove('open');">Join</button>
+        </div>
+        <div style="background:#1a1b27; padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; color:#ffffff;">Data Structures &amp; LeetCode Sprint</div>
+            <div style="font-size:12px; color:#10b981;">● 14 students studying now</div>
+          </div>
+          <button type="button" class="btn-hero-primary" style="padding:6px 14px; font-size:12px;" onclick="window.miraApp.triggerSavedNotification('Joined LeetCode Sprint'); document.getElementById('modal-kn-study').classList.remove('open');">Join</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 8: Video Lectures -->
+  <div class="mira-modal-overlay" id="modal-kn-videos">
+    <div class="mira-modal-dialog">
+      <div class="modal-header-row">
+        <h3 class="modal-title">Video Lectures Library</h3>
+        <button type="button" class="modal-close-btn">&times;</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="background:#1a1b27; padding:12px; border-radius:10px; cursor:pointer;" onclick="window.miraApp.triggerSavedNotification('Playing: Thermodynamics Part 3'); document.getElementById('modal-kn-videos').classList.remove('open');">
+          <div style="font-weight:700; color:#ffffff;">▶ Lecture 12: Thermodynamics &amp; Entropy</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">42 mins · Prof. K. Verma</div>
+        </div>
+        <div style="background:#1a1b27; padding:12px; border-radius:10px; cursor:pointer;" onclick="window.miraApp.triggerSavedNotification('Playing: Graph Traversal'); document.getElementById('modal-kn-videos').classList.remove('open');">
+          <div style="font-weight:700; color:#ffffff;">▶ Lecture 08: Breadth-First &amp; Depth-First Search</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">38 mins · Prof. Sarah Jenkins</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 9: Live Classes -->
+  <div class="mira-modal-overlay" id="modal-kn-live">
+    <div class="mira-modal-dialog">
+      <div class="modal-header-row">
+        <h3 class="modal-title">Live Interactive Classes</h3>
+        <button type="button" class="modal-close-btn">&times;</button>
+      </div>
+      <p style="font-size: 13px; color:var(--text-muted); margin-bottom:1rem;">
+        Teachers can broadcast interactive lectures, whiteboard sessions, and moderate student Q&amp;A.
+      </p>
+      <button type="button" class="btn-hero-primary" style="width:100%; justify-content:center;" onclick="window.miraApp.openModal('modal-live-room'); document.getElementById('modal-kn-live').classList.remove('open');">
+        Start New Live Class Broadcast
+      </button>
+    </div>
+  </div>
+
+  <!-- Application Controllers -->
 
 </body>
 </html>
