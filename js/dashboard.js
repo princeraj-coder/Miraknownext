@@ -98,6 +98,13 @@ export function switchWorkspace(target) {
   document.body.setAttribute('data-workspace', target)
   localStorage.setItem('mira_active_workspace', target)
 
+  const btnMira = document.getElementById('btn-switch-mira')
+  const btnKN = document.getElementById('btn-switch-knownext')
+  if (btnMira && btnKN) {
+    btnMira.setAttribute('aria-selected', target === 'mira' ? 'true' : 'false')
+    btnKN.setAttribute('aria-selected', target === 'knownext' ? 'true' : 'false')
+  }
+
   const miraView = document.getElementById('view-mira')
   const knView = document.getElementById('view-knownext')
 
@@ -345,10 +352,9 @@ function renderMeetings() {
 //  UI EVENT LISTENERS & HELPERS
 // ══════════════════════════════════════════════════════════════════════════════
 function setupEventListeners() {
-  // Brand switcher clicks
-  document.getElementById('badge-mira')?.addEventListener('click', () => switchWorkspace('mira'))
-  document.getElementById('badge-knownext')?.addEventListener('click', () => switchWorkspace('knownext'))
-  document.getElementById('workspace-toggle-btn')?.addEventListener('click', toggleWorkspace)
+  // Brand capsule switcher clicks
+  document.getElementById('btn-switch-mira')?.addEventListener('click', () => switchWorkspace('mira'))
+  document.getElementById('btn-switch-knownext')?.addEventListener('click', () => switchWorkspace('knownext'))
 
   // Tag chip filter in KnowNext
   document.querySelectorAll('.tag-chip').forEach(chip => {

@@ -3,1257 +3,1321 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mira & KnowNext — Smart Workspace + Learning Community</title>
-  <meta name="description" content="Mira organizes your workspace — attendance, PDFs, meetings and more. KnowNext is the community where students and teachers solve problems together." />
+  <title>Mira — One workspace for everything you do.</title>
+  <meta name="description" content="Think, create, and organize. Seamlessly. Mira brings your projects, conversations, calendar, and knowledge into one vibrant home for your ideas." />
+
+  <!-- Fonts: Inter & Plus Jakarta Sans & Playfair/Instruments for italics -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/modal.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/modal.css" />
 
   <style>
     /* ══════════════════════════════════════════════════════════════════
-       RESET & TOKENS
-    ══════════════════════════════════════════════════════════════════ */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --cream:      #FFFFEB;
-      --green:      #034F46;
-      --green-light:#0A7060;
-      --black:      #1A1A1A;
-      --black70:    rgba(26,26,26,.70);
-      --black40:    rgba(26,26,26,.40);
-      --black10:    rgba(26,26,26,.08);
-      --purple:     #5B4BFF;
-      --purple-bg:  #F0EEFF;
-      --radius-lg:  1.5rem;
-      --radius-pill:100px;
+       GLOBAL RESET & THEME TOKENS
+       ══════════════════════════════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    html { scroll-behavior: smooth; }
+    :root {
+      --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --primary-purple: #7033ea;
+      --primary-purple-hover: #5d25cb;
+      --text-main: #181920;
+      --text-muted: #5c6072;
+      --text-light: #8e92a4;
+      --bg-cream: #faf9fb;
+      --radius-pill: 9999px;
+      --radius-card: 32px;
+      --radius-small-card: 24px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
-      font-family: 'Figtree', sans-serif;
-      background: var(--cream);
-      color: var(--black);
-      -webkit-font-smoothing: antialiased;
+      font-family: var(--font-sans);
+      background-color: var(--bg-cream);
+      color: var(--text-main);
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
     }
 
     /* ══════════════════════════════════════════════════════════════════
-       ANNOUNCEMENT BANNER
-    ══════════════════════════════════════════════════════════════════ */
-    .banner {
-      background: var(--green);
-      color: var(--cream);
-      text-align: center;
-      padding: .6rem 1.5rem;
-      font-size: .8125rem;
-      font-weight: 500;
-      letter-spacing: .01em;
+       FLOATING INTERACTIVE AI BOT DOCK & CHAT DRAWER
+       ══════════════════════════════════════════════════════════════════ */
+    .ai-bot-dock {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 2rem;
+      z-index: 1000;
+      width: 195px;
+      height: 180px;
+      user-select: none;
+    }
+
+    .ai-bot-glow {
+      position: absolute;
+      bottom: 4px;
+      right: 12px;
+      width: 130px;
+      height: 80px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(244, 114, 182, 0.5) 0%, rgba(168, 85, 247, 0.3) 50%, transparent 80%);
+      filter: blur(14px);
+      pointer-events: none;
+      animation: aiGlowPulse 3.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes aiGlowPulse {
+      0% { transform: scale(0.92); opacity: 0.65; }
+      100% { transform: scale(1.1); opacity: 1; }
+    }
+
+    .ai-ask-pill {
+      position: absolute;
+      bottom: 6px;
+      left: 0;
+      z-index: 20;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.85);
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #50376d;
+      box-shadow: 0 10px 25px -5px rgba(80, 55, 109, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.04);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+    }
+
+    .ai-ask-pill:hover {
+      transform: translateY(-2px);
+      background: #ffffff;
+    }
+
+    .ai-character-button {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      z-index: 10;
+      width: 155px;
+      height: 170px;
+      overflow: visible;
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ai-character-button:hover {
+      transform: translateY(-4px) scale(1.03);
+    }
+
+    .ai-character-image {
+      pointer-events: none;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: none;
+      height: 165px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 14px 28px rgba(219, 39, 119, 0.28));
+      transition: transform 0.3s ease;
+    }
+
+    .ai-character-button:hover .ai-character-image {
+      transform: translateX(-50%) scale(1.02);
+    }
+
+    .ai-status-indicator {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      background: #60ebbd;
+      box-shadow: 0 0 12px #60ebbd, 0 0 4px #60ebbd;
+      animation: statusPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes statusPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 10px #60ebbd; }
+      50% { transform: scale(1.15); box-shadow: 0 0 16px #60ebbd, 0 0 6px #60ebbd; }
+    }
+
+    /* Floating orbiting quick action buttons */
+    .ai-float-icon {
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(120, 60, 220, 0.08);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: .6rem;
-    }
-    .banner strong { font-weight: 700; }
-    .banner a {
-      color: var(--cream);
-      font-weight: 700;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-      transition: opacity .2s;
       cursor: pointer;
+      z-index: 15;
+      color: #50376d;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s, box-shadow 0.25s;
     }
-    .banner a:hover { opacity: .75; }
 
-    /* ══════════════════════════════════════════════════════════════════
-       NAVBAR
-    ══════════════════════════════════════════════════════════════════ */
-    .nav-sticky {
-      position: sticky;
-      top: 0;
-      z-index: 300;
+    .ai-float-icon:hover {
+      transform: scale(1.18) translateY(-3px);
+      background: #fdf2f8;
+      box-shadow: 0 10px 25px rgba(219, 39, 119, 0.25);
     }
-    .nav-bar {
-      background: rgba(255,255,235,.9);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(26,26,26,.09);
-      padding: 0 2.5rem;
+
+    .ai-float-icon svg {
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+
+    .ai-float-one {
+      top: 14px;
+      left: 14px;
+      animation: floatA 3.4s ease-in-out infinite alternate;
+    }
+
+    .ai-float-two {
+      top: 50px;
+      left: -12px;
+      animation: floatB 4s ease-in-out infinite alternate;
+    }
+
+    .ai-float-three {
+      top: 98px;
+      left: -4px;
+      animation: floatC 3.6s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatA {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-6px); }
+    }
+
+    @keyframes floatB {
+      0% { transform: translateY(0) translateX(0); }
+      100% { transform: translateY(-5px) translateX(4px); }
+    }
+
+    @keyframes floatC {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-6px) translateX(-3px); }
+    }
+
+    /* Interactive AI Chat Drawer */
+    .ai-chat-drawer {
+      position: fixed;
+      bottom: 200px;
+      right: 2rem;
+      width: 380px;
+      max-width: calc(100vw - 2.5rem);
+      height: 520px;
+      max-height: calc(100vh - 240px);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(80, 55, 109, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      pointer-events: none;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ai-chat-drawer.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .ai-drawer-header {
+      padding: 1rem 1.25rem;
+      background: linear-gradient(135deg, #743eed 0%, #db2777 100%);
+      color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 4rem;
     }
 
-    /* ── brand ── */
-    .nav-brand { display: flex; align-items: center; gap: 1.25rem; text-decoration: none; }
-
-    .brand-block {
+    .ai-drawer-title-wrap {
       display: flex;
       align-items: center;
-      gap: .5rem;
-    }
-    .brand-logo {
-      height: 2rem;
-      width: auto;
-      object-fit: contain;
-    }
-    .brand-name {
-      font-family: 'EB Garamond', serif;
-      font-size: 1.15rem;
-      font-weight: 600;
-      color: var(--black);
-      letter-spacing: -.01em;
-    }
-    .brand-sep {
-      width: 1px;
-      height: 1.5rem;
-      background: var(--black40);
-      border-radius: 1px;
+      gap: 10px;
     }
 
-    /* ── links ── */
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-      list-style: none;
-    }
-    @media (max-width: 820px) { .nav-links { display: none; } }
-
-    .nav-links a {
-      font-size: .9rem;
-      font-weight: 500;
-      color: var(--black70);
-      text-decoration: none;
-      transition: color .2s;
-    }
-    .nav-links a:hover { color: var(--black); }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    /* ── cta ── */
-    .nav-signin {
-      background: transparent;
-      border: 1px solid rgba(26,26,26,.2);
-      color: var(--black);
-      font-size: .875rem;
-      font-weight: 600;
-      padding: .5rem 1.1rem;
-      border-radius: var(--radius-pill);
-      text-decoration: none;
-      cursor: pointer;
-      transition: all .2s;
-    }
-    .nav-signin:hover {
-      border-color: var(--black);
-      background: rgba(26,26,26,.05);
-    }
-
-    .nav-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      background: var(--black);
-      color: var(--cream);
-      font-size: .875rem;
-      font-weight: 600;
-      padding: .55rem 1.35rem;
-      border-radius: var(--radius-pill);
-      text-decoration: none;
-      transition: background .2s, transform .15s;
-      white-space: nowrap;
-      cursor: pointer;
-      border: none;
-    }
-    .nav-cta:hover { background: var(--green); transform: translateY(-1px); }
-
-    .nav-signout-btn {
-      display: none;
-      background: transparent;
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: #DC2626;
-      font-size: .8rem;
-      font-weight: 600;
-      padding: .45rem .85rem;
-      border-radius: var(--radius-pill);
-      cursor: pointer;
-      transition: all .2s;
-    }
-    .nav-signout-btn:hover {
-      background: #FEE2E2;
-      border-color: #DC2626;
-    }
-
-    .nav-hamburger {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      cursor: pointer;
-      padding: 4px;
-    }
-    .nav-hamburger span {
-      display: block; width: 22px; height: 2px;
-      background: var(--black); border-radius: 2px;
-    }
-    @media (max-width: 820px) { .nav-hamburger { display: flex; } }
-
-    /* ══════════════════════════════════════════════════════════════════
-       HERO
-    ══════════════════════════════════════════════════════════════════ */
-    .hero {
-      padding: 6.5rem 1.5rem 0;
-      text-align: center;
-      position: relative;
-    }
-
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: .5rem;
-      font-size: .75rem;
-      font-weight: 700;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--black70);
-      border: 1px solid rgba(26,26,26,.2);
-      border-radius: var(--radius-pill);
-      padding: .35rem 1rem;
-      margin-bottom: 2rem;
-    }
-    .eyebrow-dot {
-      width: 6px; height: 6px;
-      background: var(--green);
+    .ai-drawer-avatar {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      display: inline-block;
-    }
-
-    .hero-h1 {
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(3rem, 8vw, 5.75rem);
-      font-weight: 400;
-      line-height: 1.07;
-      letter-spacing: -.025em;
-      color: var(--black);
-      margin-bottom: 1.75rem;
-    }
-    .hero-h1 em {
-      font-style: italic;
-      color: var(--green);
-    }
-
-    .hero-sub {
-      font-size: clamp(.95rem, 2vw, 1.2rem);
-      color: var(--black70);
-      max-width: 42rem;
-      margin: 0 auto 2.75rem;
-      line-height: 1.65;
-    }
-
-    /* CTA group */
-    .hero-cta-row {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1.5px solid rgba(255, 255, 255, 0.6);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.25rem;
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: .5rem;
-      background: var(--black);
-      color: var(--cream);
-      font-size: 1rem;
-      font-weight: 700;
-      padding: .9rem 2.25rem;
-      border-radius: var(--radius-pill);
-      text-decoration: none;
-      transition: background .2s, transform .15s, box-shadow .2s;
-      box-shadow: 0 4px 24px rgba(26,26,26,.2);
-      cursor: pointer;
-      border: none;
-    }
-    .btn-primary:hover {
-      background: var(--green);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 32px rgba(3,79,70,.28);
-    }
-
-    .btn-outline {
-      display: inline-flex;
-      align-items: center;
-      gap: .45rem;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--black);
-      text-decoration: none;
-      padding: .9rem 1.75rem;
-      border-radius: var(--radius-pill);
-      border: 1.5px solid rgba(26,26,26,.25);
-      transition: border-color .2s, background .2s;
-    }
-    .btn-outline:hover {
-      border-color: var(--black);
-      background: var(--black10);
-    }
-
-    .hero-note {
-      font-size: .8rem;
-      color: var(--black40);
-      margin-bottom: 5rem;
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       HERO CARD (dark showcase area)
-    ══════════════════════════════════════════════════════════════════ */
-    .hero-card-wrap {
-      position: relative;
-      max-width: 68rem;
-      margin: 0 auto;
-    }
-
-    .wave-side {
-      position: absolute;
-      top: 0;
-      width: 48%;
-      pointer-events: none;
-      z-index: 1;
-    }
-    .wave-side.left  { left: -4%; }
-    .wave-side.right { right: -4%; }
-
-    .hero-dark-card {
-      position: relative;
-      z-index: 2;
-      background: var(--black);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      overflow: hidden;
-      padding: 2.5rem 2rem 0;
-    }
-
-    .preview-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-    }
-    @media (max-width: 640px) { .preview-grid { grid-template-columns: 1fr; } }
-
-    .preview-pane {
-      background: rgba(255,255,235,.06);
-      border: 1px solid rgba(255,255,235,.11);
-      border-radius: 1rem 1rem 0 0;
       overflow: hidden;
     }
 
-    .pane-header {
-      display: flex;
-      align-items: center;
-      gap: .65rem;
-      padding: .85rem 1.1rem;
-      border-bottom: 1px solid rgba(255,255,235,.08);
+    .ai-drawer-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
-    .pane-icon {
-      width: 28px; height: 28px;
-      border-radius: .5rem;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
-      flex-shrink: 0;
-    }
-    .pane-icon.mira-icon  { background: rgba(10,112,96,.35); }
-    .pane-icon.kn-icon    { background: rgba(91,75,255,.3); }
 
-    .pane-title {
-      font-size: .8125rem;
+    .ai-drawer-name {
+      font-size: 0.95rem;
       font-weight: 700;
-      color: var(--cream);
-      letter-spacing: .02em;
-    }
-    .pane-subtitle {
-      font-size: .7rem;
-      color: rgba(255,255,235,.4);
-      font-weight: 500;
+      letter-spacing: -0.01em;
     }
 
-    .pane-body { padding: 1rem 1.1rem 1.25rem; }
-
-    .feature-row {
+    .ai-drawer-sub {
+      font-size: 0.72rem;
+      opacity: 0.9;
       display: flex;
       align-items: center;
-      gap: .65rem;
-      padding: .55rem 0;
-      border-bottom: 1px solid rgba(255,255,235,.06);
-    }
-    .feature-row:last-child { border-bottom: none; }
-
-    .feature-row-icon {
-      width: 30px; height: 30px;
-      background: rgba(255,255,235,.07);
-      border-radius: .5rem;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .9rem;
-      flex-shrink: 0;
-    }
-    .feature-row-text { flex: 1; }
-    .feature-row-label {
-      font-size: .8rem;
-      font-weight: 600;
-      color: var(--cream);
-    }
-    .feature-row-desc {
-      font-size: .7rem;
-      color: rgba(255,255,235,.45);
-      margin-top: .1rem;
-    }
-    .feature-row-badge {
-      font-size: .65rem;
-      font-weight: 700;
-      background: rgba(10,112,96,.5);
-      color: #9EFFC5;
-      border-radius: 100px;
-      padding: .15rem .55rem;
-      white-space: nowrap;
+      gap: 5px;
     }
 
-    .thread-item {
-      background: rgba(255,255,235,.05);
-      border: 1px solid rgba(255,255,235,.08);
-      border-radius: .75rem;
-      padding: .7rem .85rem;
-      margin-bottom: .65rem;
-    }
-    .thread-item:last-child { margin-bottom: 0; }
-
-    .thread-meta {
-      display: flex;
-      align-items: center;
-      gap: .45rem;
-      margin-bottom: .4rem;
-    }
-    .thread-avatar {
-      width: 22px; height: 22px;
+    .ai-drawer-sub::before {
+      content: '';
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .65rem;
-      font-weight: 700;
-      flex-shrink: 0;
+      background: #60ebbd;
+      box-shadow: 0 0 6px #60ebbd;
     }
-    .av-s { background: #5B4BFF; color: #fff; }
-    .av-t { background: #0A7060; color: #fff; }
 
-    .thread-author {
-      font-size: .72rem;
+    .ai-drawer-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: #ffffff;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      line-height: 1;
+      transition: background 0.2s;
+    }
+
+    .ai-drawer-close:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Preset prompt chips inside drawer */
+    .ai-prompt-chips {
+      display: flex;
+      gap: 6px;
+      padding: 8px 12px;
+      background: rgba(245, 243, 255, 0.7);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .ai-prompt-chips::-webkit-scrollbar {
+      display: none;
+    }
+
+    .ai-chip {
+      background: #ffffff;
+      border: 1px solid rgba(120, 60, 220, 0.15);
+      border-radius: 9999px;
+      padding: 4px 10px;
+      font-size: 11px;
       font-weight: 600;
-      color: rgba(255,255,235,.7);
+      color: #6b21a8;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
     }
-    .thread-role-tag {
-      font-size: .6rem;
-      font-weight: 700;
-      padding: .1rem .4rem;
-      border-radius: 100px;
-      margin-left: auto;
-    }
-    .tag-student  { background: rgba(91,75,255,.25); color: #A89DFF; }
-    .tag-teacher  { background: rgba(10,112,96,.35); color: #9EFFC5; }
 
-    .thread-q {
-      font-size: .775rem;
-      color: var(--cream);
-      font-weight: 500;
-      line-height: 1.4;
-      margin-bottom: .35rem;
+    .ai-chip:hover {
+      background: #743eed;
+      color: #ffffff;
+      border-color: #743eed;
+      transform: translateY(-1px);
     }
-    .thread-answers {
-      font-size: .68rem;
-      color: rgba(255,255,235,.35);
+
+    /* Chat message list */
+    .ai-chat-messages {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-    .thread-answers strong { color: rgba(255,255,235,.6); }
+
+    .ai-msg {
+      max-width: 82%;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      border-radius: 16px;
+      word-break: break-word;
+      animation: msgPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes msgPop {
+      0% { opacity: 0; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .ai-msg.bot-msg {
+      align-self: flex-start;
+      background: #f3f4f6;
+      color: #1f2937;
+      border-bottom-left-radius: 4px;
+    }
+
+    .ai-msg.user-msg {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #743eed 0%, #db2777 100%);
+      color: #ffffff;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 12px rgba(116, 62, 237, 0.2);
+    }
+
+    /* Input area */
+    .ai-chat-footer {
+      padding: 10px 12px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      background: #ffffff;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .ai-chat-input {
+      flex: 1;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 9999px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .ai-chat-input:focus {
+      border-color: #743eed;
+      box-shadow: 0 0 0 3px rgba(116, 62, 237, 0.12);
+    }
+
+    .ai-chat-send {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #743eed;
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .ai-chat-send:hover {
+      background: #5b21b6;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 600px) {
+      .ai-bot-dock {
+        right: 0.75rem;
+        bottom: 0.75rem;
+        transform: scale(0.88);
+        transform-origin: bottom right;
+      }
+      .ai-chat-drawer {
+        right: 0.75rem;
+        left: 0.75rem;
+        width: auto;
+        bottom: 160px;
+      }
+    }
 
     /* ══════════════════════════════════════════════════════════════════
-       PRODUCT SECTIONS
-    ══════════════════════════════════════════════════════════════════ */
-    .products-section { padding: 6rem 1.5rem; }
+       SECTION 1: HERO PAGE (Image 1)
+       ══════════════════════════════════════════════════════════════════ */
+    .section-hero {
+      position: relative;
+      min-height: 100vh;
+      background: radial-gradient(circle at 10% 30%, rgba(94, 91, 240, 0.5) 0%, rgba(94, 91, 240, 0) 50%),
+                  radial-gradient(circle at 92% 40%, rgba(246, 182, 122, 0.45) 0%, rgba(79, 219, 238, 0.35) 30%, rgba(79, 219, 238, 0) 65%),
+                  linear-gradient(180deg, #743eed 0%, #894ef3 25%, #9d68f6 60%, #b88ef8 85%, #d1b4fa 100%);
+      padding: 1.5rem 2rem 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-    .section-label {
-      text-align: center;
-      font-size: .75rem;
-      font-weight: 700;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--black40);
+    /* Floating Navbar */
+    .hero-nav {
+      width: 100%;
+      max-width: 1180px;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: var(--radius-pill);
+      padding: 0 1.25rem 0 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
       margin-bottom: 3.5rem;
     }
 
-    .product-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      max-width: 72rem;
-      margin: 0 auto 1.5rem;
-    }
-    @media (max-width: 820px) { .product-row { grid-template-columns: 1fr; } }
-
-    .product-card {
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      padding: 2.75rem 2.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-    .product-card.mira-card {
-      background: var(--black);
-      color: var(--cream);
-    }
-    .product-card.kn-card {
-      background: var(--purple-bg);
-      color: var(--black);
-      border: 1px solid rgba(91,75,255,.15);
-    }
-
-    .pc-logo-row {
+    .nav-brand-left {
       display: flex;
       align-items: center;
-      gap: .65rem;
+      gap: 0.65rem;
+      text-decoration: none;
     }
-    .pc-logo {
-      height: 2.25rem;
+
+    .nav-brand-left img {
+      height: 28px;
       width: auto;
       object-fit: contain;
     }
-    .mira-card .pc-logo { filter: brightness(10); }
 
-    .pc-name {
-      font-family: 'EB Garamond', serif;
+    .nav-brand-title {
       font-size: 1.35rem;
-      font-weight: 600;
-      letter-spacing: -.01em;
-    }
-    .mira-card .pc-name { color: var(--cream); }
-    .kn-card   .pc-name { color: var(--black); }
-
-    .pc-tagline {
-      font-size: clamp(1.5rem, 3.5vw, 2.25rem);
-      font-family: 'EB Garamond', serif;
-      font-weight: 400;
-      line-height: 1.2;
-      letter-spacing: -.02em;
-    }
-    .mira-card .pc-tagline { color: var(--cream); }
-    .kn-card   .pc-tagline { color: var(--black); }
-    .pc-tagline em { font-style: italic; }
-    .mira-card .pc-tagline em { color: #9EFFC5; }
-    .kn-card   .pc-tagline em { color: var(--purple); }
-
-    .pc-desc {
-      font-size: .95rem;
-      line-height: 1.65;
-      opacity: .72;
-    }
-
-    .pc-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .5rem;
-    }
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: .35rem;
-      font-size: .8rem;
-      font-weight: 600;
-      padding: .35rem .85rem;
-      border-radius: var(--radius-pill);
-    }
-    .mira-card .chip {
-      background: rgba(255,255,235,.1);
-      color: rgba(255,255,235,.85);
-      border: 1px solid rgba(255,255,235,.14);
-    }
-    .kn-card .chip {
-      background: rgba(91,75,255,.1);
-      color: var(--purple);
-      border: 1px solid rgba(91,75,255,.18);
-    }
-
-    .pc-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      font-size: .9rem;
       font-weight: 700;
-      padding: .7rem 1.6rem;
-      border-radius: var(--radius-pill);
-      text-decoration: none;
-      align-self: flex-start;
-      transition: transform .15s, box-shadow .2s;
-      cursor: pointer;
-      border: none;
-    }
-    .mira-card .pc-cta {
-      background: var(--cream);
-      color: var(--black);
-      box-shadow: 0 4px 20px rgba(255,255,235,.15);
-    }
-    .mira-card .pc-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,255,235,.25); }
-
-    .kn-card .pc-cta {
-      background: var(--purple);
-      color: #fff;
-      box-shadow: 0 4px 20px rgba(91,75,255,.25);
-    }
-    .kn-card .pc-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(91,75,255,.35); }
-
-    /* ══════════════════════════════════════════════════════════════════
-       MIRA FEATURE GRID
-    ══════════════════════════════════════════════════════════════════ */
-    .features-detail { padding: 0 1.5rem 6rem; }
-    .features-detail-inner { max-width: 72rem; margin: 0 auto; }
-
-    .section-heading {
-      text-align: center;
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 400;
-      letter-spacing: -.02em;
-      line-height: 1.15;
-      margin-bottom: .75rem;
-    }
-    .section-heading em { font-style: italic; color: var(--green); }
-
-    .section-sub {
-      text-align: center;
-      font-size: 1rem;
-      color: var(--black70);
-      margin-bottom: 3rem;
-      max-width: 36rem;
-      margin-left: auto;
-      margin-right: auto;
+      color: #1a1a24;
+      letter-spacing: -0.02em;
     }
 
-    .feat-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.25rem;
-    }
-    @media (max-width: 820px) { .feat-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 520px)  { .feat-grid { grid-template-columns: 1fr; } }
-
-    .feat-card {
-      background: var(--black10);
-      border: 1px solid rgba(26,26,26,.07);
-      border-radius: 1.125rem;
-      padding: 1.75rem 1.5rem;
-      transition: transform .2s, box-shadow .2s;
-    }
-    .feat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(26,26,26,.09); }
-
-    .feat-card-emoji { font-size: 1.75rem; margin-bottom: 1rem; display: block; }
-    .feat-card-title { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
-    .feat-card-desc { font-size: .875rem; color: var(--black70); line-height: 1.6; }
-
-    /* ══════════════════════════════════════════════════════════════════
-       KNOWNEXT COMMUNITY SECTION
-    ══════════════════════════════════════════════════════════════════ */
-    .community-section {
-      background: var(--purple-bg);
-      padding: 6rem 1.5rem;
-      border-top: 1px solid rgba(91,75,255,.1);
-      border-bottom: 1px solid rgba(91,75,255,.1);
-    }
-
-    .community-inner { max-width: 72rem; margin: 0 auto; }
-    .community-heading { color: var(--black); }
-    .community-heading em { color: var(--purple); }
-
-    .community-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.25rem;
-      margin-top: 3rem;
-    }
-    @media (max-width: 820px) { .community-grid { grid-template-columns: repeat(2,1fr); } }
-    @media (max-width: 520px)  { .community-grid { grid-template-columns: 1fr; } }
-
-    .comm-card {
-      background: #fff;
-      border: 1px solid rgba(91,75,255,.12);
-      border-radius: 1.125rem;
-      padding: 1.75rem 1.5rem;
-      transition: transform .2s, box-shadow .2s;
-    }
-    .comm-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(91,75,255,.12); }
-
-    .comm-card-emoji { font-size: 1.75rem; margin-bottom: 1rem; display: block; }
-    .comm-card-title { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
-    .comm-card-desc  { font-size: .875rem; color: var(--black70); line-height: 1.6; }
-
-    /* ══════════════════════════════════════════════════════════════════
-       HOW IT WORKS
-    ══════════════════════════════════════════════════════════════════ */
-    .how-section { padding: 6rem 1.5rem; text-align: center; }
-
-    .steps-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 2rem;
-      max-width: 68rem;
-      margin: 3rem auto 0;
-    }
-    @media (max-width: 820px) { .steps-row { grid-template-columns: repeat(2,1fr); } }
-    @media (max-width: 480px) { .steps-row { grid-template-columns: 1fr; } }
-
-    .step {
+    .nav-center-links {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: .85rem;
+      gap: 2.5rem;
+      list-style: none;
     }
-    .step-num {
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      background: var(--black);
-      color: var(--cream);
-      font-size: .9rem;
-      font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .step-title { font-size: .975rem; font-weight: 700; }
-    .step-desc  { font-size: .85rem; color: var(--black70); line-height: 1.55; }
 
-    /* ══════════════════════════════════════════════════════════════════
-       FINAL CTA BAND
-    ══════════════════════════════════════════════════════════════════ */
-    .cta-band {
-      background: var(--green);
-      color: var(--cream);
-      padding: 5.5rem 1.5rem;
+    @media (max-width: 800px) {
+      .nav-center-links { display: none; }
+    }
+
+    .nav-center-links a {
+      color: #272835;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .nav-center-links a:hover {
+      color: #000;
+    }
+
+    .btn-nav-getstarted {
+      background: var(--primary-purple);
+      color: #ffffff;
+      border: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.65rem 1.6rem;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      box-shadow: 0 6px 18px rgba(112, 51, 234, 0.35);
+      transition: all 0.25s ease;
+    }
+
+    .btn-nav-getstarted:hover {
+      background: var(--primary-purple-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(112, 51, 234, 0.5);
+    }
+
+    /* Hero Light Card Container */
+    .hero-card-container {
+      width: 100%;
+      max-width: 1040px;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: var(--radius-card);
+      padding: 4.5rem 2.5rem 3.5rem;
       text-align: center;
+      box-shadow: 0 28px 70px rgba(80, 30, 160, 0.15), inset 0 1px 1px #ffffff;
+      position: relative;
     }
-    .cta-band h2 {
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(2rem, 5vw, 3.25rem);
-      font-weight: 400;
-      letter-spacing: -.02em;
-      margin-bottom: 1rem;
-    }
-    .cta-band h2 em { font-style: italic; }
-    .cta-band p { font-size: 1rem; opacity: .75; margin-bottom: 2.5rem; }
 
-    .cta-band-row {
+    .hero-top-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      padding: 0.45rem 1.25rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #3b3d4f;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .hero-title-main {
+      font-size: clamp(2.8rem, 6.5vw, 4.8rem);
+      font-weight: 800;
+      color: #12131a;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-title-main em {
+      font-style: italic;
+      font-weight: 600;
+      background: linear-gradient(135deg, #6432e6 0%, #2596be 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      padding-right: 0.1em;
+    }
+
+    .hero-subhead-bold {
+      font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+      font-weight: 700;
+      color: #2a2c3a;
+      margin-bottom: 0.85rem;
+    }
+
+    .hero-desc-text {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.6;
+    }
+
+    /* Hero Buttons */
+    .hero-actions-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 1rem;
+      gap: 1.1rem;
       flex-wrap: wrap;
+      margin-bottom: 2rem;
     }
 
-    .btn-white {
-      display: inline-flex;
-      align-items: center;
-      gap: .45rem;
-      background: var(--cream);
-      color: var(--black);
-      font-size: 1rem;
-      font-weight: 700;
-      padding: .9rem 2.25rem;
-      border-radius: var(--radius-pill);
-      text-decoration: none;
-      transition: background .2s, transform .15s;
-      box-shadow: 0 4px 20px rgba(0,0,0,.15);
-      cursor: pointer;
+    .btn-hero-purple {
+      background: var(--primary-purple);
+      color: #ffffff;
       border: none;
-    }
-    .btn-white:hover { background: #fff; transform: translateY(-2px); }
-
-    .btn-ghost {
-      display: inline-flex;
-      align-items: center;
-      gap: .45rem;
+      font-family: inherit;
       font-size: 1rem;
       font-weight: 600;
-      color: rgba(255,255,235,.8);
-      border: 1.5px solid rgba(255,255,235,.4);
-      padding: .9rem 1.75rem;
+      padding: 0.85rem 2.25rem;
       border-radius: var(--radius-pill);
-      text-decoration: none;
-      transition: border-color .2s, color .2s;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 24px rgba(112, 51, 234, 0.4);
+      transition: all 0.25s ease;
     }
-    .btn-ghost:hover { border-color: var(--cream); color: var(--cream); }
+
+    .btn-hero-purple:hover {
+      background: var(--primary-purple-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px rgba(112, 51, 234, 0.55);
+    }
+
+    .btn-hero-glass {
+      background: rgba(255, 255, 255, 0.7);
+      color: #1e202c;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.85rem 2rem;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.25s ease;
+    }
+
+    .btn-hero-glass:hover {
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      transform: translateY(-1px);
+    }
+
+    .hero-footer-note {
+      font-size: 0.85rem;
+      color: #6a6e82;
+      font-weight: 500;
+    }
 
     /* ══════════════════════════════════════════════════════════════════
-       FOOTER
-    ══════════════════════════════════════════════════════════════════ */
-    .footer {
-      background: var(--black);
-      color: var(--cream);
-      padding: 2.75rem 2.5rem;
+       SECTION 2: SCANNER / LIVE WEBSITE PREVIEW BOX (Image 2)
+       ══════════════════════════════════════════════════════════════════ */
+    .section-scanner {
+      padding: 5rem 2rem;
+      background: #faf9fb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .scanner-box-wrapper {
+      width: 100%;
+      max-width: 1180px;
+      background: #0d0e12;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      box-shadow: 0 35px 80px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.06);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .scanner-box-wrapper:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 45px 100px rgba(0, 0, 0, 0.28);
+    }
+
+    .scanner-top-bar {
+      height: 48px;
+      background: #17181f;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .scanner-dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .scanner-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+
+    .scanner-dot.r { background: #ff5f57; }
+    .scanner-dot.y { background: #febc2e; }
+    .scanner-dot.g { background: #28c840; }
+
+    .scanner-title-badge {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.55);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .scanner-preview-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       SECTION 3: FEATURES PAGE (Image 3)
+       ══════════════════════════════════════════════════════════════════ */
+    .section-features {
+      padding: 6rem 2rem 5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .features-header-row {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 3rem;
+      align-items: flex-start;
+      margin-bottom: 4rem;
+    }
+
+    @media (max-width: 860px) {
+      .features-header-row {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    .feat-eyebrow {
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--primary-purple);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .feat-main-headline {
+      font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+      font-weight: 800;
+      color: #12131a;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+    }
+
+    .feat-header-desc {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      padding-top: 1.5rem;
+    }
+
+    /* 4 Feature Cards Grid */
+    .features-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 1024px) {
+      .features-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 580px) {
+      .features-cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .feature-clean-card {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      border-radius: var(--radius-small-card);
+      padding: 2.25rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .feature-clean-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+      border-color: rgba(112, 51, 234, 0.2);
+    }
+
+    .feat-icon-sq {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .feat-icon-sq.orange { background: #ffedd5; color: #ea580c; }
+    .feat-icon-sq.blue   { background: #e0e7ff; color: #4338ca; }
+    .feat-icon-sq.green  { background: #dcfce7; color: #15803d; }
+    .feat-icon-sq.yellow { background: #fef3c7; color: #d97706; }
+
+    .feat-card-title {
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: #12131a;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.75rem;
+    }
+
+    .feat-card-body {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 2rem;
+      flex-grow: 1;
+    }
+
+    .feat-card-link {
+      color: #14151e;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: color 0.2s ease, gap 0.2s ease;
+    }
+
+    .feat-card-link:hover {
+      color: var(--primary-purple);
+      gap: 0.6rem;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       SECTION 4: GET STARTED BANNER & FOOTER (Image 4)
+       ══════════════════════════════════════════════════════════════════ */
+    .section-getstarted {
+      padding: 3rem 2rem 5rem;
+      background: #faf9fb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .cta-card-aurora {
+      width: 100%;
+      max-width: 1040px;
+      background: radial-gradient(circle at 10% 20%, rgba(200, 230, 255, 0.8) 0%, rgba(200, 230, 255, 0) 50%),
+                  radial-gradient(circle at 90% 80%, rgba(255, 220, 200, 0.8) 0%, rgba(255, 220, 200, 0) 50%),
+                  linear-gradient(135deg, #f5f2fd 0%, #ebe5fc 50%, #fbf4ee 100%);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: var(--radius-card);
+      padding: 5rem 2.5rem;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.06);
+      margin-bottom: 5rem;
+    }
+
+    .cta-sparkle-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      color: var(--primary-purple);
+      font-size: 1.1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .cta-card-title {
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 800;
+      color: #12131a;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+
+    .cta-card-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.6;
+    }
+
+    .btn-cta-large {
+      background: var(--primary-purple);
+      color: #ffffff;
+      border: none;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 600;
+      padding: 0.95rem 2.5rem;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 24px rgba(112, 51, 234, 0.4);
+      transition: all 0.25s ease;
+    }
+
+    .btn-cta-large:hover {
+      background: var(--primary-purple-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px rgba(112, 51, 234, 0.55);
+    }
+
+    /* Clean Footer */
+    .clean-footer {
+      width: 100%;
+      max-width: 1180px;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      padding: 2.25rem 1rem 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 1.25rem;
+      gap: 1.5rem;
     }
-    .footer-brand { display: flex; align-items: center; gap: 1rem; }
 
-    .footer-logo {
-      height: 1.6rem;
+    .footer-brand-left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .footer-brand-left img {
+      height: 26px;
       width: auto;
-      object-fit: contain;
-      filter: brightness(0) invert(1);
-      opacity: .85;
-    }
-    .footer-brand-name {
-      font-family: 'EB Garamond', serif;
-      font-size: 1rem;
-      font-weight: 600;
-      opacity: .85;
-    }
-    .footer-divider {
-      width: 1px; height: 1.1rem;
-      background: rgba(255,255,235,.3);
     }
 
-    .footer-copy { font-size: .78rem; opacity: .35; }
+    .footer-brand-left span {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1a1a24;
+    }
 
-    .footer-links { display: flex; gap: 1.5rem; list-style: none; }
-    .footer-links a {
-      font-size: .8rem;
-      color: rgba(255,255,235,.4);
+    .footer-copyright {
+      font-size: 0.88rem;
+      color: var(--text-light);
+    }
+
+    .footer-links-right {
+      display: flex;
+      gap: 1.75rem;
+      list-style: none;
+    }
+
+    .footer-links-right a {
+      color: var(--text-muted);
       text-decoration: none;
-      transition: color .2s;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
     }
-    .footer-links a:hover { color: var(--cream); }
 
-    @media (max-width: 640px) {
-      .footer { flex-direction: column; align-items: flex-start; }
+    .footer-links-right a:hover {
+      color: #000;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ────────────────── BANNER ──────────────────────────────────────── -->
-  <div class="banner">
-    <strong>🎉 Mira Workspace &amp; KnowNext Community — now live!</strong>
-    &nbsp;<a data-open-modal="signup">Get Early Access →</a>
+  <!-- ══════════════════════════════════════════════════════════════════
+       FLOATING INTERACTIVE AI BOT DOCK & CHAT WIDGET
+       ══════════════════════════════════════════════════════════════════ -->
+  <div class="ai-bot-dock" id="ai-bot-dock">
+    <div class="ai-bot-glow"></div>
+    <span class="ai-ask-pill" id="ai-ask-pill">Ask Mira</span>
+    <button type="button" class="ai-character-button" id="ai-character-button" aria-label="Open Mira AI">
+      <img class="ai-character-image" src="/mira-ai-character.png" alt="Mira AI Character" />
+      <span class="ai-status-indicator"></span>
+    </button>
+    <button type="button" class="ai-float-icon ai-float-one" data-action="brainstorm" onclick="openMiraWith('Help me brainstorm fresh ideas')" aria-label="Brainstorm with Mira" title="Brainstorm ideas">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7e22ce" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"/>
+      </svg>
+    </button>
+    <button type="button" class="ai-float-icon ai-float-two" data-action="plan" onclick="openMiraWith('Plan and prioritize my day')" aria-label="Plan with Mira" title="Plan with Mira">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="3"/>
+        <path d="m9 12 2 2 4-4"/>
+      </svg>
+    </button>
+    <button type="button" class="ai-float-icon ai-float-three" data-action="chat" onclick="openMiraWith('What can you help me with?')" aria-label="Chat with Mira" title="Chat with Mira">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </button>
   </div>
 
-  <!-- ────────────────── NAVBAR ──────────────────────────────────────── -->
-  <div class="nav-sticky">
-    <nav class="nav-bar">
-
-      <a href="/" class="nav-brand">
-        <div class="brand-block">
-          <img src="resorse/Mira Logo 1.png" alt="Mira Logo" class="brand-logo" />
-          <span class="brand-name">Mira</span>
+  <!-- Slide-out Interactive AI Assistant Drawer -->
+  <div class="ai-chat-drawer" id="ai-chat-drawer" role="dialog" aria-label="Mira AI Assistant">
+    <div class="ai-drawer-header">
+      <div class="ai-drawer-title-wrap">
+        <div class="ai-drawer-avatar">
+          <img src="/mira-ai-character.png" alt="Mira" />
         </div>
-        <div class="brand-sep"></div>
-        <div class="brand-block">
-          <img src="resorse/KN logo 1.png" alt="KnowNext Logo" class="brand-logo" />
-          <span class="brand-name">KnowNext</span>
-        </div>
-      </a>
-
-      <ul class="nav-links">
-        <li><a href="#mira">Workspace</a></li>
-        <li><a href="#knowNext">Community</a></li>
-        <li><a href="#how">How it works</a></li>
-        <li><a href="#pricing">Pricing</a></li>
-      </ul>
-
-      <div class="nav-actions">
-        <button class="nav-signin" data-open-modal="signin">Sign In</button>
-        <button class="nav-cta" data-open-modal="signup">Get Started</button>
-        <button class="nav-signout-btn" data-signout>Sign Out</button>
-      </div>
-
-      <div class="nav-hamburger" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </div>
-
-    </nav>
-  </div>
-
-  <!-- ────────────────── HERO ────────────────────────────────────────── -->
-  <main>
-    <section class="hero">
-
-      <div class="hero-eyebrow">
-        <span class="eyebrow-dot"></span>
-        Smart Workspace &amp; Learning Community
-      </div>
-
-      <h1 class="hero-h1">
-        One platform.<br />
-        <em>Every classroom need.</em>
-      </h1>
-
-      <p class="hero-sub">
-        <strong>Mira</strong> organizes your workspace — track attendance, host meetings,
-        manage PDFs and more. <strong>KnowNext</strong> connects students and teachers
-        in a community built for solving real problems together.
-      </p>
-
-      <div class="hero-cta-row">
-        <button class="btn-primary" data-open-modal="signup">
-          Get Started — It's Free
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </button>
-        <a href="#mira" class="btn-outline">Explore Features</a>
-      </div>
-
-      <p class="hero-note">Free to get started · No credit card needed · For students &amp; educators</p>
-
-      <!-- ── HERO DARK CARD ── -->
-      <div class="hero-card-wrap">
-
-        <!-- Main dark card with previews -->
-        <div class="hero-dark-card">
-          <div class="preview-grid">
-
-            <!-- ── Mira Preview ── -->
-            <div class="preview-pane">
-              <div class="pane-header">
-                <div class="pane-icon mira-icon">📋</div>
-                <div>
-                  <div class="pane-title">Mira Workspace</div>
-                  <div class="pane-subtitle">Today's dashboard</div>
-                </div>
-              </div>
-              <div class="pane-body">
-
-                <div class="feature-row">
-                  <div class="feature-row-icon">📊</div>
-                  <div class="feature-row-text">
-                    <div class="feature-row-label">Attendance Tracker</div>
-                    <div class="feature-row-desc">32 / 38 present · Batch B · Mon</div>
-                  </div>
-                  <div class="feature-row-badge">Live</div>
-                </div>
-
-                <div class="feature-row">
-                  <div class="feature-row-icon">📄</div>
-                  <div class="feature-row-text">
-                    <div class="feature-row-label">Physics Notes.pdf</div>
-                    <div class="feature-row-desc">Uploaded · Shared with Batch A</div>
-                  </div>
-                </div>
-
-                <div class="feature-row">
-                  <div class="feature-row-icon">🎥</div>
-                  <div class="feature-row-text">
-                    <div class="feature-row-label">Meeting · 3:00 PM</div>
-                    <div class="feature-row-desc">Parent–Teacher · 12 joined</div>
-                  </div>
-                  <div class="feature-row-badge">Soon</div>
-                </div>
-
-                <div class="feature-row">
-                  <div class="feature-row-icon">📅</div>
-                  <div class="feature-row-text">
-                    <div class="feature-row-label">Exam Schedule</div>
-                    <div class="feature-row-desc">Mid-term · Nov 4 – Nov 8</div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <!-- ── KnowNext Preview ── -->
-            <div class="preview-pane">
-              <div class="pane-header">
-                <div class="pane-icon kn-icon">💬</div>
-                <div>
-                  <div class="pane-title">KnowNext Community</div>
-                  <div class="pane-subtitle">Recent discussions</div>
-                </div>
-              </div>
-              <div class="pane-body">
-
-                <div class="thread-item">
-                  <div class="thread-meta">
-                    <div class="thread-avatar av-s">A</div>
-                    <span class="thread-author">Ananya S.</span>
-                    <span class="thread-role-tag tag-student">Student</span>
-                  </div>
-                  <div class="thread-q">Why does pressure increase with depth in fluids? Can someone explain intuitively?</div>
-                  <div class="thread-answers"><strong>4 answers</strong> · Mr. Raj replied</div>
-                </div>
-
-                <div class="thread-item">
-                  <div class="thread-meta">
-                    <div class="thread-avatar av-t">T</div>
-                    <span class="thread-author">Mr. Raj</span>
-                    <span class="thread-role-tag tag-teacher">Teacher</span>
-                  </div>
-                  <div class="thread-q">Practice set for Integration posted — Chapter 7. Attempt before Thursday!</div>
-                  <div class="thread-answers"><strong>21 students</strong> bookmarked this</div>
-                </div>
-
-                <div class="thread-item">
-                  <div class="thread-meta">
-                    <div class="thread-avatar av-s">K</div>
-                    <span class="thread-author">Karthik M.</span>
-                    <span class="thread-role-tag tag-student">Student</span>
-                  </div>
-                  <div class="thread-q">Can someone share notes on Organic Chemistry reactions? I missed the class.</div>
-                  <div class="thread-answers"><strong>2 answers</strong> · PDF shared</div>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
+        <div>
+          <div class="ai-drawer-name">Mira AI Companion</div>
+          <div class="ai-drawer-sub">Online & Ready to help</div>
         </div>
       </div>
-
-    </section>
-
-    <!-- ────────────── PRODUCT OVERVIEW CARDS ──────────────────────── -->
-    <section class="products-section" id="mira">
-      <p class="section-label">Two products, one ecosystem</p>
-
-      <div class="product-row">
-
-        <!-- Mira Card -->
-        <div class="product-card mira-card">
-          <div class="pc-logo-row">
-            <img src="resorse/Mira Logo 1.png" alt="Mira" class="pc-logo" />
-            <span class="pc-name">Mira</span>
-          </div>
-          <div class="pc-tagline">
-            Your school.<br /><em>Perfectly organized.</em>
-          </div>
-          <p class="pc-desc">
-            Mira is the all-in-one workspace built for educational institutions.
-            Manage attendance, share resources, host virtual meetings, organize timetables
-            and keep every stakeholder on the same page — all from one dashboard.
-          </p>
-          <div class="pc-chips">
-            <span class="chip">📊 Attendance</span>
-            <span class="chip">📄 PDF Uploads</span>
-            <span class="chip">🎥 Meetings</span>
-            <span class="chip">📅 Scheduling</span>
-            <span class="chip">📢 Announcements</span>
-          </div>
-          <button class="pc-cta" data-open-modal="signup">
-            Explore Mira
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-
-        <!-- KnowNext Card -->
-        <div class="product-card kn-card" id="knowNext">
-          <div class="pc-logo-row">
-            <img src="resorse/KN logo 1.png" alt="KnowNext" class="pc-logo" />
-            <span class="pc-name">KnowNext</span>
-          </div>
-          <div class="pc-tagline">
-            Every question<br /><em>finds an answer.</em>
-          </div>
-          <p class="pc-desc">
-            KnowNext is the learning community where students post their doubts and
-            peers or teachers step in to help. Build shared knowledge, celebrate problem-solvers,
-            and ensure no student is ever stuck alone.
-          </p>
-          <div class="pc-chips">
-            <span class="chip">💬 Ask Anything</span>
-            <span class="chip">🏆 Top Helpers</span>
-            <span class="chip">📂 Share Resources</span>
-            <span class="chip">🔔 Follow Topics</span>
-            <span class="chip">👨‍🏫 Teacher Verified</span>
-          </div>
-          <button class="pc-cta" data-open-modal="signup">
-            Join KnowNext
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ────────────── MIRA FEATURE GRID ───────────────────────────── -->
-    <section class="features-detail">
-      <div class="features-detail-inner">
-
-        <h2 class="section-heading">Everything Mira<br /><em>handles for you</em></h2>
-        <p class="section-sub">Tools designed for teachers, administrators and institutions to run smoothly every day.</p>
-
-        <div class="feat-grid">
-
-          <div class="feat-card">
-            <span class="feat-card-emoji">📊</span>
-            <div class="feat-card-title">Attendance Management</div>
-            <p class="feat-card-desc">Mark, track and export daily attendance for students. Get alerts for absentees and auto-generate monthly reports.</p>
-          </div>
-
-          <div class="feat-card">
-            <span class="feat-card-emoji">📄</span>
-            <div class="feat-card-title">PDF Upload &amp; Sharing</div>
-            <p class="feat-card-desc">Upload notes, assignments and syllabi as PDFs. Share instantly with specific batches, classes or individuals.</p>
-          </div>
-
-          <div class="feat-card">
-            <span class="feat-card-emoji">🎥</span>
-            <div class="feat-card-title">Host Meetings</div>
-            <p class="feat-card-desc">Schedule and run virtual meetings directly inside Mira — parent-teacher meets, staff reviews or live classes.</p>
-          </div>
-
-          <div class="feat-card">
-            <span class="feat-card-emoji">📅</span>
-            <div class="feat-card-title">Timetable &amp; Scheduling</div>
-            <p class="feat-card-desc">Create and publish class schedules, exam dates and events. Students and teachers always know what's next.</p>
-          </div>
-
-          <div class="feat-card">
-            <span class="feat-card-emoji">📢</span>
-            <div class="feat-card-title">Announcements</div>
-            <p class="feat-card-desc">Broadcast notices to the whole school or specific batches. Urgent alerts, holiday notices and reminders in one tap.</p>
-          </div>
-
-          <div class="feat-card">
-            <span class="feat-card-emoji">📈</span>
-            <div class="feat-card-title">Reports &amp; Analytics</div>
-            <p class="feat-card-desc">Get a bird's-eye view of attendance trends, resource usage and engagement — all in one clean dashboard.</p>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- ────────────── KNOWNEXT COMMUNITY SECTION ────────────────────── -->
-    <section class="community-section">
-      <div class="community-inner">
-
-        <h2 class="section-heading community-heading">
-          Learn together on<br /><em>KnowNext</em>
-        </h2>
-        <p class="section-sub" style="color:rgba(26,26,26,.65)">
-          A peer-powered community where curiosity meets collaboration.
-        </p>
-
-        <div class="community-grid">
-
-          <div class="comm-card">
-            <span class="comm-card-emoji">🙋</span>
-            <div class="comm-card-title">Post Your Doubts</div>
-            <p class="comm-card-desc">Any student can ask any question — from tricky math problems to career advice — and get real answers fast.</p>
-          </div>
-
-          <div class="comm-card">
-            <span class="comm-card-emoji">👨‍🏫</span>
-            <div class="comm-card-title">Teacher-Verified Answers</div>
-            <p class="comm-card-desc">Teachers can mark the best answers as verified, so students always know which solution to trust.</p>
-          </div>
-
-          <div class="comm-card">
-            <span class="comm-card-emoji">🤝</span>
-            <div class="comm-card-title">Peer-to-Peer Help</div>
-            <p class="comm-card-desc">Smart students help others and earn recognition. The more you give, the higher you rise on the leaderboard.</p>
-          </div>
-
-          <div class="comm-card">
-            <span class="comm-card-emoji">📂</span>
-            <div class="comm-card-title">Share Resources</div>
-            <p class="comm-card-desc">Attach PDFs, images and links to answers. Build a growing library of knowledge the whole class benefits from.</p>
-          </div>
-
-          <div class="comm-card">
-            <span class="comm-card-emoji">🔔</span>
-            <div class="comm-card-title">Follow Topics &amp; Tags</div>
-            <p class="comm-card-desc">Subscribe to subjects or topics. Get notified when new questions or answers appear in your areas of interest.</p>
-          </div>
-
-          <div class="comm-card">
-            <span class="comm-card-emoji">🏆</span>
-            <div class="comm-card-title">Recognition &amp; Badges</div>
-            <p class="comm-card-desc">Top contributors earn badges and are highlighted to the community — rewarding those who help others learn.</p>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- ────────────── HOW IT WORKS ─────────────────────────────────── -->
-    <section class="how-section" id="how">
-      <h2 class="section-heading">Get started in <em>minutes</em></h2>
-      <p class="section-sub">No lengthy setup. Just sign up and your workspace is ready.</p>
-
-      <div class="steps-row">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-title">Create your account</div>
-          <p class="step-desc">Sign up as a student, teacher or institution admin — free.</p>
-        </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-title">Set up your workspace</div>
-          <p class="step-desc">Add batches, upload resources and invite your team in minutes.</p>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-title">Join the community</div>
-          <p class="step-desc">Connect to KnowNext, post questions and start helping peers.</p>
-        </div>
-        <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-title">Run your school smarter</div>
-          <p class="step-desc">Track attendance, host meetings and never miss a thing.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ────────────── FINAL CTA BAND ───────────────────────────────── -->
-    <section class="cta-band">
-      <h2>Ready to transform<br /><em>how you learn and work?</em></h2>
-      <p>Join thousands of students and educators already using Mira &amp; KnowNext.</p>
-      <div class="cta-band-row">
-        <button class="btn-white" data-open-modal="signup">
-          Get Started Free
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-        <a href="#mira" class="btn-ghost">See all features</a>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ────────────── FOOTER ───────────────────────────────────────────── -->
-  <footer class="footer">
-
-    <div class="footer-brand">
-      <img src="resorse/Mira Logo 1.png" alt="Mira" class="footer-logo" />
-      <span class="footer-brand-name">Mira</span>
-      <div class="footer-divider"></div>
-      <img src="resorse/KN logo 1.png" alt="KnowNext" class="footer-logo" />
-      <span class="footer-brand-name">KnowNext</span>
+      <button class="ai-drawer-close" id="ai-close-drawer" aria-label="Close chat">&times;</button>
     </div>
 
-    <p class="footer-copy">© 2026 Mira &amp; KnowNext. All rights reserved.</p>
+    <!-- Quick Prompt Chips -->
+    <div class="ai-prompt-chips">
+      <button type="button" class="ai-chip" data-mira-prompt="brainstorm">✨ Brainstorm</button>
+      <button type="button" class="ai-chip" data-mira-prompt="plan">📋 Plan Day</button>
+      <button type="button" class="ai-chip" data-mira-prompt="chat">💬 Workspace FAQ</button>
+    </div>
 
-    <ul class="footer-links">
-      <li><a href="#">Privacy Policy</a></li>
-      <li><a href="#">Terms of Use</a></li>
-      <li><a href="#">Contact Us</a></li>
-    </ul>
+    <!-- Messages Container -->
+    <div class="ai-chat-messages" id="ai-chat-messages"></div>
 
-  </footer>
+    <!-- Input Footer -->
+    <div class="ai-chat-footer">
+      <input type="text" class="ai-chat-input" id="ai-chat-input" placeholder="Ask Mira anything..." />
+      <button type="button" class="ai-chat-send" id="ai-send-btn" aria-label="Send">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 
   <!-- ══════════════════════════════════════════════════════════════════
-       AUTH & ONBOARDING MODAL
+       PAGE 1: HERO PAGE (From User Image 1)
+       ══════════════════════════════════════════════════════════════════ -->
+  <header class="section-hero" id="page-1">
+
+    <!-- Floating Pill Navigation Bar -->
+    <nav class="hero-nav">
+      <a href="/" class="nav-brand-left">
+        <img src="/resorse/Mira Logo 1.png" alt="Mira Logo" />
+        <span class="nav-brand-title">Mira</span>
+      </a>
+
+      <ul class="nav-center-links">
+        <li><a href="#page-3">Tools</a></li>
+        <li><a href="#page-2">How it works</a></li>
+        <li><a href="#page-4">Pricing</a></li>
+      </ul>
+
+      <!-- Popup button triggers auth modal -->
+      <button class="btn-nav-getstarted" data-open-modal="signup">
+        Get started &rarr;
+      </button>
+    </nav>
+
+    <!-- Translucent Light Hero Card -->
+    <div class="hero-card-container">
+      <div class="hero-top-pill">
+        <span>✨</span> The modern operating system for your work.
+      </div>
+
+      <h1 class="hero-title-main">
+        One workspace for<br />
+        <em>everything you do.</em>
+      </h1>
+
+      <p class="hero-subhead-bold">
+        Think, create, and organize. Seamlessly.
+      </p>
+
+      <p class="hero-desc-text">
+        Mira brings your projects, conversations, calendar, and knowledge into one vibrant home for your ideas.
+      </p>
+
+      <div class="hero-actions-row">
+        <!-- Get Started Popup Button -->
+        <button class="btn-hero-purple" data-open-modal="signup">
+          Get started &rarr;
+        </button>
+
+        <!-- Smooth Scroll to Scanner Page -->
+        <a href="#page-2" class="btn-hero-glass">
+          <span>▶</span> See how it works
+        </a>
+      </div>
+
+      <p class="hero-footer-note">
+        Free for up to 5 people · No credit card required
+      </p>
+    </div>
+
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       PAGE 2: SCANNER — WEBSITE IMAGE BOX (From User Image 2)
+       ══════════════════════════════════════════════════════════════════ -->
+  <section class="section-scanner" id="page-2">
+
+    <!-- Scanner Box Container showcasing the website image -->
+    <div class="scanner-box-wrapper" data-open-modal="signup" title="Click to launch interactive workspace">
+      <!-- Window Title Bar -->
+      <div class="scanner-top-bar">
+        <div class="scanner-dots">
+          <span class="scanner-dot r"></span>
+          <span class="scanner-dot y"></span>
+          <span class="scanner-dot g"></span>
+        </div>
+        <div class="scanner-title-badge">
+          <span>🟢</span> Mira Workspace OS — Good morning, Alex.
+        </div>
+        <div style="font-size:0.75rem; color:rgba(255,255,255,0.4); font-weight:600;">
+          Live Preview
+        </div>
+      </div>
+
+      <!-- Website Dashboard Image -->
+      <img
+        src="/images/dashboard-preview.png"
+        alt="Mira Workspace Operating System Screen"
+        class="scanner-preview-img"
+      />
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       PAGE 3: FEATURES (From User Image 3)
+       ══════════════════════════════════════════════════════════════════ -->
+  <section class="section-features" id="page-3">
+
+    <!-- Section Header Row -->
+    <div class="features-header-row">
+      <div>
+        <div class="feat-eyebrow">EVERYTHING IN ONE PLACE</div>
+        <h2 class="feat-main-headline">
+          One workspace.<br />
+          Every way you work.
+        </h2>
+      </div>
+
+      <p class="feat-header-desc">
+        Stop switching between a dozen tabs. Mira gives every part of your work a shared home—connected, searchable, and always in sync.
+      </p>
+    </div>
+
+    <!-- 4 Clean Feature Cards -->
+    <div class="features-cards-grid">
+
+      <!-- Card 1: Project management -->
+      <div class="feature-clean-card">
+        <div class="feat-icon-sq orange">
+          <span>📋</span>
+        </div>
+        <h3 class="feat-card-title">Project management</h3>
+        <p class="feat-card-body">
+          Plan, prioritize, and ship your best work with a flexible task system.
+        </p>
+        <a href="#page-4" class="feat-card-link">
+          Explore &rarr;
+        </a>
+      </div>
+
+      <!-- Card 2: Team conversations -->
+      <div class="feature-clean-card">
+        <div class="feat-icon-sq blue">
+          <span>💬</span>
+        </div>
+        <h3 class="feat-card-title">Team conversations</h3>
+        <p class="feat-card-body">
+          Keep decisions close to the work, not scattered across endless threads.
+        </p>
+        <a href="#page-4" class="feat-card-link">
+          Explore &rarr;
+        </a>
+      </div>
+
+      <!-- Card 3: Smart scheduling -->
+      <div class="feature-clean-card">
+        <div class="feat-icon-sq green">
+          <span>📅</span>
+        </div>
+        <h3 class="feat-card-title">Smart scheduling</h3>
+        <p class="feat-card-body">
+          Protect your focus time and bring your team together without the back-and-forth.
+        </p>
+        <a href="#page-4" class="feat-card-link">
+          Explore &rarr;
+        </a>
+      </div>
+
+      <!-- Card 4: Docs & knowledge -->
+      <div class="feature-clean-card">
+        <div class="feat-icon-sq yellow">
+          <span>📄</span>
+        </div>
+        <h3 class="feat-card-title">Docs &amp; knowledge</h3>
+        <p class="feat-card-body">
+          Turn ideas into shared knowledge your whole workspace can access.
+        </p>
+        <a href="#page-4" class="feat-card-link">
+          Explore &rarr;
+        </a>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       PAGE 4: GET STARTED & FOOTER (From User Image 4)
+       ══════════════════════════════════════════════════════════════════ -->
+  <section class="section-getstarted" id="page-4">
+
+    <!-- Pastel Aurora Card -->
+    <div class="cta-card-aurora">
+      <div class="cta-sparkle-pill">
+        <span>✨</span>
+      </div>
+
+      <h2 class="cta-card-title">
+        Make space for your best work.
+      </h2>
+
+      <p class="cta-card-desc">
+        Join thousands of professionals simplifying their workday with Mira. Start free, invite your team when you're ready.
+      </p>
+
+      <!-- Popup Trigger Button -->
+      <button class="btn-cta-large" data-open-modal="signup">
+        Get started &rarr;
+      </button>
+    </div>
+
+    <!-- Clean Footer Bar -->
+    <footer class="clean-footer">
+      <div class="footer-brand-left">
+        <img src="/resorse/Mira Logo 1.png" alt="Mira Logo" />
+        <span>Mira</span>
+      </div>
+
+      <div class="footer-copyright">
+        &copy; 2026 Mira, Inc. Work brilliantly.
+      </div>
+
+      <ul class="footer-links-right">
+        <li><a href="#privacy">Privacy</a></li>
+        <li><a href="#terms">Terms</a></li>
+        <li><a href="#page-1">Contact</a></li>
+      </ul>
+    </footer>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       POPUP SIGN IN & SIGN UP MODAL + ONBOARDING QUESTIONS
        ══════════════════════════════════════════════════════════════════ -->
   <div class="modal-backdrop" id="auth-modal" aria-hidden="true">
     <div class="modal-container" role="dialog" aria-modal="true">
@@ -1263,8 +1327,8 @@
         <!-- ── STEP 1: AUTH (Sign Up / Sign In Tabs) ── -->
         <div class="modal-step active" id="step-auth">
           <div class="auth-header">
-            <h3>Welcome to Mira &amp; KnowNext</h3>
-            <p>Access your smart workspace and community</p>
+            <h3>Welcome to Mira</h3>
+            <p>Access your workspace and start organizing your work</p>
           </div>
 
           <div class="auth-tabs">
@@ -1462,16 +1526,7 @@
               Your profile has been saved. Your workspace is customized and ready.
             </p>
 
-            <div class="welcome-badges">
-              <div class="welcome-badge mira" id="badge-mira">
-                <span>📋</span> Mira Workspace Ready
-              </div>
-              <div class="welcome-badge kn" id="badge-kn">
-                <span>💬</span> KnowNext Community Joined
-              </div>
-            </div>
-
-            <button class="btn-submit" onclick="closeModal()">Go to Dashboard &rarr;</button>
+            <button class="btn-submit" onclick="window.location.href='/dashboard.html'">Go to Dashboard &rarr;</button>
           </div>
         </div>
 
@@ -1479,8 +1534,9 @@
     </div>
   </div>
 
-  <!-- Vite module entry -->
+  <!-- Vite module entry: auth & popup handling -->
   <script type="module" src="/js/auth.js"></script>
+  <script type="module" src="/js/ai-bot.js"></script>
 
 </body>
 </html>

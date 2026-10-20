@@ -18,24 +18,36 @@
        ══════════════════════════════════════════════════════════════════ -->
   <header class="app-header">
 
-    <!-- Brand Switcher Area -->
-    <div class="header-brand-switcher">
-      <!-- Mira Badge -->
-      <div class="brand-badge mira-badge" id="badge-mira" title="Switch to Mira Workspace">
-        <img src="/resorse/Mira Logo 1.png" alt="Mira Logo" />
-        <span class="brand-title">Mira</span>
-      </div>
+    <!-- Interactive Capsule Brand Switcher (Inspiration Design) -->
+    <div class="brand-capsule-switcher" id="brand-capsule-switcher" role="tablist" aria-label="Workspace Switcher">
+      <!-- Sliding active amber pill -->
+      <div class="capsule-pill-active" aria-hidden="true"></div>
 
-      <!-- Animated Switch Toggle Button -->
-      <button class="workspace-toggle-btn" id="workspace-toggle-btn" aria-label="Toggle Workspace">
-        <div class="toggle-slider">⇄</div>
+      <!-- Mira Segment -->
+      <button
+        type="button"
+        class="capsule-segment mira-segment"
+        id="btn-switch-mira"
+        role="tab"
+        aria-selected="true"
+        title="Switch to Mira Workspace"
+      >
+        <img src="/resorse/Mira Logo 1.png" alt="Mira Logo" class="capsule-logo-img" />
+        <span class="capsule-label">Mira</span>
       </button>
 
-      <!-- KnowNext Badge -->
-      <div class="brand-badge knownext-badge" id="badge-knownext" title="Switch to KnowNext Community">
-        <img src="/resorse/KN logo 1.png" alt="KnowNext Logo" />
-        <span class="brand-title">KnowNext</span>
-      </div>
+      <!-- KnowNext Segment -->
+      <button
+        type="button"
+        class="capsule-segment knownext-segment"
+        id="btn-switch-knownext"
+        role="tab"
+        aria-selected="false"
+        title="Switch to KnowNext Community"
+      >
+        <img src="/resorse/KN logo 1.png" alt="KnowNext Logo" class="capsule-logo-img" />
+        <span class="capsule-label">KnowNext</span>
+      </button>
     </div>
 
     <!-- Header Actions Right -->
