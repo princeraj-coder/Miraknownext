@@ -101,6 +101,14 @@ class MiraAiAssistant {
       });
     });
 
+    // 7b. Keyboard shortcut: Ctrl + J / Cmd + J
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        this.toggleSidebar();
+      }
+    });
+
     // 8. Outside click dismiss
     document.addEventListener('click', (e) => {
       if (!this.isOpen) return;
@@ -227,18 +235,43 @@ class MiraAiAssistant {
     setTimeout(() => {
       const lower = text.toLowerCase();
       let reply = MIRA_RESPONSES.default;
+
+      // Smart task creation from chat
+      if (lower.startsWith('add task') || lower.startsWith('new task') || lower.startsWith('create task') || lower.startsWith('todo ')) {
+        const title = text.replace(/^(add task|new task|create task|todo)\s*[:\-]?\s*/i, '').trim();
+        if (title && window.miraApp) {
+          const newTask = {
+            id: 't_' + Date.now(),
+            title: title,
+            priority: 'medium',
+            priorityLabel: 'Medium priority',
+            tag: 'Workspace',
+            time: 'Flexible',
+            done: false,
+            date: 'Today'
+          };
+          window.miraApp.tasks.unshift(newTask);
+          window.miraApp.renderTasks();
+          window.miraApp.updateDayFlow();
+          reply = `✅ **Task added to your Daily Plan:**\n"${title}"\n\nI've automatically synced it to your Planner & Tasks board and updated your progress bar!`;
+          this.addBotMessage(reply);
+          return;
+        }
+      }
+
       if (lower.includes('plan') || lower.includes('day') || lower.includes('schedule')) {
-        reply = MIRA_RESPONSES.plan;
+        const pendingCount = window.miraApp?.tasks?.filter(t => !t.done)?.length || 3;
+        reply = `📋 **Your Workspace Plan for Today:**\n• You currently have **${pendingCount} pending tasks** on your board.\n• **Morning:** Review active product roadmap & sprint board.\n• **Afternoon:** Check uploaded course notes & PDF lecture handouts.\n• **Focus Recommendation:** Start a 25-min Focus Session to clear top priorities.`;
       } else if (lower.includes('idea') || lower.includes('brainstorm') || lower.includes('fresh')) {
         reply = MIRA_RESPONSES.brainstorm;
       } else if (lower.includes('attendance') || lower.includes('student')) {
         reply = `📊 **Attendance Manager:**\nYou can track and toggle attendance directly in your Mira Workspace. 32 / 38 students are marked present today. Click 'Launch Workspace' to export CSV.`;
       } else if (lower.includes('pdf') || lower.includes('doc') || lower.includes('note')) {
-        reply = `📂 **PDF Hub:**\nYou can drag and drop lecture notes and share them instantly with specific classes or batches.`;
+        reply = `📂 **PDF & Document Hub:**\nYou can access your documents, drag-and-drop lecture notes, and collaborate in real-time in the Split Screen Studio.`;
       } else if (lower.includes('doubt') || lower.includes('question') || lower.includes('knownext')) {
         reply = `🔒 **KnowNext Q&A:**\nAll doubts on KnowNext are 100% anonymous, tagged by Roll Number so students ask freely without peer pressure.`;
       } else if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-        reply = `👋 Hello! How is your workflow going? Ask me to brainstorm ideas, plan your schedule, or organize your workspace!`;
+        reply = `👋 Hello! How is your workflow going? Ask me to brainstorm ideas, plan your schedule, or tell me 'add task [task name]' to add directly to your planner!`;
       }
       this.addBotMessage(reply);
     }, 450);
