@@ -1,7 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  js/mira-app.js — Core Controller for Mira Workspace & KnowNext Platform
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabase } from './supabase.js'
 
 class MiraApp {
   constructor() {
@@ -21,22 +20,6 @@ class MiraApp {
     this.focusMinutes = 25;
     this.sessionWorkDone = new Set(['docs', 'sheets', 'mail']);
 
-    // Recent Work State (Canva & Edge Copilot style)
-    this.recentFilter = 'all';
-    this.toolFilter = 'all';
-    this.sidebarCollapsed = localStorage.getItem('mira_sidebar_collapsed') === 'true';
-    this.currentUser = null;
-
-    const savedRecent = localStorage.getItem('mira_recent_files');
-    this.recentFiles = savedRecent ? JSON.parse(savedRecent) : [
-      { id: 'doc-1', title: 'Product Strategy & Launch Brief', type: 'docs', typeLabel: 'DOC', time: 'Edited 20m ago', size: '24 KB', tool: 'docs', author: 'Prince Raj', icon: '📄', color: '#3b82f6', pinned: true },
-      { id: 'sheet-1', title: 'Academic Attendance & Performance Q4', type: 'sheets', typeLabel: 'SHEET', time: 'Edited 1h ago', size: '142 KB', tool: 'sheets', author: 'Prince Raj', icon: '📊', color: '#10b981', pinned: false },
-      { id: 'slide-1', title: 'Faculty Sync & Project Review', type: 'slides', typeLabel: 'SLIDE', time: 'Edited 3h ago', size: '4.8 MB', tool: 'slides', author: 'Prince Raj', icon: '📽️', color: '#f97316', pinned: false },
-      { id: 'pdf-1', title: 'Fluid_Mechanics_Lecture_04.pdf', type: 'pdf', typeLabel: 'PDF', time: 'Edited Yesterday', size: '3.4 MB', tool: 'drive', author: 'Faculty Dept', icon: '📕', color: '#ef4444', pinned: false },
-      { id: 'pdf-2', title: 'Linear_Algebra_Assignment_2.pdf', type: 'pdf', typeLabel: 'PDF', time: 'Edited 2 days ago', size: '1.2 MB', tool: 'drive', author: 'Math Faculty', icon: '📘', color: '#6366f1', pinned: false },
-      { id: 'pdf-3', title: 'Exam_Guidelines_Midterm_2026.pdf', type: 'pdf', typeLabel: 'PDF', time: 'Edited 4 days ago', size: '840 KB', tool: 'drive', author: 'Exam Cell', icon: '📋', color: '#eab308', pinned: false }
-    ];
-
     // Focus Sessions State (Windows 11 Clock inspired)
     this.focusDurationMinutes = 25;
     this.focusRemainingSeconds = 25 * 60;
@@ -51,8 +34,6 @@ class MiraApp {
   }
 
   init() {
-    this.initSidebar();
-    this.initUserProfileAndSync();
     this.bindNavigation();
     this.bindProjectDropdown();
     this.bindTasksInteractions();
@@ -61,7 +42,6 @@ class MiraApp {
     this.bindModals();
     this.bindKeyboardShortcuts();
     this.renderTasks();
-    this.renderRecentWork();
     this.updateDayFlow();
     this.renderSplitWorkspace();
     this.renderSidebarOpenToolsTray();
@@ -69,214 +49,6 @@ class MiraApp {
     this.initFocusTimer();
     this.populateFocusTasks();
     this.bindDockFlyoutPanels();
-  }
-
-  // ── SIDEBAR & PROFILE CONTROLS ──
-  initSidebar() {
-    const dock = document.getElementById('sidebar-dock');
-    if (!dock) return;
-    if (this.sidebarCollapsed) {
-      dock.classList.add('collapsed');
-    } else {
-      dock.classList.remove('collapsed');
-    }
-  }
-
-  toggleSidebar() {
-    const dock = document.getElementById('sidebar-dock');
-    if (!dock) return;
-    dock.classList.toggle('collapsed');
-    this.sidebarCollapsed = dock.classList.contains('collapsed');
-    localStorage.setItem('mira_sidebar_collapsed', this.sidebarCollapsed);
-  }
-
-  async initUserProfileAndSync() {
-    // Online / offline state
-    const updateOnline = () => {
-      const dot = document.getElementById('top-sync-dot');
-      const label = document.getElementById('top-sync-label');
-      if (navigator.onLine) {
-        if (dot) dot.className = 'sync-status-dot online';
-        if (label) label.textContent = 'Cloud Synced';
-      } else {
-        if (dot) dot.className = 'sync-status-dot offline';
-        if (label) label.textContent = 'Offline Mode';
-      }
-    };
-    window.addEventListener('online', updateOnline);
-    window.addEventListener('offline', updateOnline);
-    updateOnline();
-
-    // Close user dropdown on outside click
-    document.addEventListener('click', (e) => {
-      const wrapper = document.getElementById('top-user-menu-wrapper');
-      const dropdown = document.getElementById('top-user-dropdown');
-      if (dropdown && dropdown.classList.contains('open') && !wrapper?.contains(e.target)) {
-        dropdown.classList.remove('open');
-      }
-    });
-
-    // Check Supabase session
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        this.currentUser = session.user;
-        const name = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Prince Raj';
-        const email = session.user.email || 'prince@mira.workspace';
-        const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'PR';
-
-        const greetingHeadline = document.getElementById('home-greeting-headline');
-        if (greetingHeadline) greetingHeadline.textContent = `What will you create today, ${name}?`;
-        
-        const topAvatar = document.getElementById('top-user-avatar-circle');
-        if (topAvatar) topAvatar.textContent = initials;
-        const dropAvatar = document.getElementById('dropdown-user-avatar');
-        if (dropAvatar) dropAvatar.textContent = initials;
-        const sideAvatar = document.getElementById('sidebar-user-avatar');
-        if (sideAvatar) sideAvatar.textContent = initials;
-        
-        const dropName = document.getElementById('dropdown-user-name');
-        if (dropName) dropName.textContent = name;
-        const dropEmail = document.getElementById('dropdown-user-email');
-        if (dropEmail) dropEmail.textContent = email;
-        const sideName = document.getElementById('sidebar-user-name');
-        if (sideName) sideName.textContent = name;
-        
-        const authLabel = document.getElementById('dropdown-auth-label');
-        if (authLabel) authLabel.textContent = 'Sign Out';
-      }
-    } catch (err) {
-      console.warn('Session check fallback:', err);
-    }
-  }
-
-  toggleUserDropdown() {
-    const dropdown = document.getElementById('top-user-dropdown');
-    if (dropdown) dropdown.classList.toggle('open');
-  }
-
-  async handleAuthAction() {
-    if (this.currentUser) {
-      await supabase.auth.signOut();
-      window.location.reload();
-    } else {
-      window.location.href = '/index.html';
-    }
-  }
-
-  // ── RECENT WORK CONTROLLER (Canva & Edge Copilot style) ──
-  renderRecentWork(filter = this.recentFilter) {
-    this.recentFilter = filter;
-    const container = document.getElementById('home-recent-work-grid');
-    if (!container) return;
-
-    let items = this.recentFiles;
-    if (filter !== 'all') {
-      items = items.filter(f => f.type === filter);
-    }
-
-    if (items.length === 0) {
-      container.innerHTML = `
-        <div class="recent-empty-state">
-          <div class="recent-empty-icon">📂</div>
-          <div class="recent-empty-title">No ${filter === 'all' ? 'recent files' : filter + ' documents'} found</div>
-          <div class="recent-empty-desc">Create your first document or upload a file using the quick actions above to start organizing your work.</div>
-          <button type="button" class="btn-hero-ask-ai" onclick="window.miraApp.addToolToSplitWorkspace('docs')" style="margin-top: 8px;">+ New Document</button>
-        </div>
-      `;
-      return;
-    }
-
-    container.innerHTML = items.map(file => `
-      <div class="recent-work-card" onclick="window.miraApp.openRecentItem('${file.id}')" role="button" tabindex="0">
-        <div class="recent-card-canvas">
-          <span class="recent-card-tag" style="background: ${file.color}33; color: ${file.color}; border: 1px solid ${file.color}55;">${file.typeLabel}</span>
-          <button type="button" class="recent-card-menu-btn" onclick="event.stopPropagation(); window.miraApp.deleteRecentItem('${file.id}')" title="Remove from recent">✕</button>
-          <div class="recent-card-icon-pill" style="background: ${file.color}22; color: ${file.color};">
-            ${file.icon || '📄'}
-          </div>
-        </div>
-        <div class="recent-card-body">
-          <div class="recent-card-title" title="${this.escapeHtml(file.title)}">${this.escapeHtml(file.title)}</div>
-          <div class="recent-card-meta">
-            <span class="recent-card-time">
-              <span class="recent-card-status-dot"></span>
-              ${this.escapeHtml(file.time)}
-            </span>
-            <span>${this.escapeHtml(file.size || 'Saved')}</span>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  filterRecentWork(filter, btn) {
-    document.querySelectorAll('#recent-work-filter-tabs .cat-tab-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    this.renderRecentWork(filter);
-  }
-
-  openRecentItem(fileId) {
-    const file = this.recentFiles.find(f => f.id === fileId);
-    if (!file) return;
-    this.addToolToSplitWorkspace(file.tool || 'docs');
-  }
-
-  deleteRecentItem(fileId) {
-    this.recentFiles = this.recentFiles.filter(f => f.id !== fileId);
-    localStorage.setItem('mira_recent_files', JSON.stringify(this.recentFiles));
-    this.renderRecentWork();
-  }
-
-  filterToolLauncher(category, btn) {
-    this.toolFilter = category;
-    document.querySelectorAll('#tool-category-tabs .cat-tab-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-
-    const tiles = document.querySelectorAll('#tool-launcher-grid .tool-launcher-tile');
-    tiles.forEach(tile => {
-      const cat = tile.dataset.cat;
-      if (category === 'all' || cat === category) {
-        tile.style.display = 'flex';
-      } else {
-        tile.style.display = 'none';
-      }
-    });
-  }
-
-  handleHeroSearchSubmit(e) {
-    if (e && e.preventDefault) e.preventDefault();
-    const input = document.getElementById('hero-universal-search-input');
-    const query = input?.value?.trim();
-    if (!query) return;
-
-    const lower = query.toLowerCase();
-    if (lower.startsWith('how') || lower.startsWith('what') || lower.startsWith('can') || lower.startsWith('why') || lower.includes('ai') || lower.includes('help') || lower.includes('summarize')) {
-      window.openMiraWith(query);
-    } else {
-      this.openSpotlightSearch(query);
-    }
-    if (input) input.value = '';
-  }
-
-  executeHeroAiPrompt() {
-    const input = document.getElementById('hero-universal-search-input');
-    const query = input?.value?.trim() || 'Help me brainstorm fresh ideas for my project';
-    window.openMiraWith(query);
-    if (input) input.value = '';
-  }
-
-  openSpotlightSearch(initialQuery = '') {
-    this.toggleDockPanel('search');
-    if (initialQuery) {
-      setTimeout(() => {
-        const input = document.getElementById('dock-search-input');
-        if (input) {
-          input.value = initialQuery;
-          this.handleDockSearch(initialQuery);
-        }
-      }, 100);
-    }
   }
 
   // ── 1. SIDEBAR & VIEW SWITCHING ──
@@ -307,13 +79,6 @@ class MiraApp {
     }
 
     this.currentView = viewName;
-
-    // Update breadcrumb
-    const breadcrumb = document.getElementById('top-breadcrumb-current');
-    if (breadcrumb) {
-      const names = { home: 'Home', workspace: 'Split Studio', tasks: 'Plan & Tasks', focus: 'Focus Sessions', tools: 'All Tools' };
-      breadcrumb.textContent = names[viewName] || viewName.charAt(0).toUpperCase() + viewName.slice(1);
-    }
 
     // Update dock buttons
     document.querySelectorAll('.dock-btn').forEach(btn => {
@@ -809,28 +574,6 @@ class MiraApp {
       setTimeout(() => {
         pane.style.boxShadow = '';
       }, 1200);
-    }
-  }
-
-  setSplitLayout(mode, btn) {
-    const canvas = document.getElementById('split-workspace-canvas');
-    if (!canvas) return;
-
-    canvas.classList.remove('layout-1-col', 'layout-2-col', 'layout-3-col');
-    canvas.classList.add(`layout-${mode}`);
-
-    document.querySelectorAll('#workspace-layout-selector .btn-layout-mode').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-
-    if (mode === '1-col') {
-      const firstActive = this.activeStudioTools[0] || 'docs';
-      this.maximizedTool = firstActive;
-      this.renderSplitWorkspace();
-      this.triggerSavedNotification(`1-Column Focus: ${this.getToolDisplayName(firstActive)}`);
-    } else {
-      this.maximizedTool = null;
-      this.renderSplitWorkspace();
-      this.triggerSavedNotification(`${mode === '2-col' ? '2-Column Dual' : '3-Column Multi'} Split View Active`);
     }
   }
 
