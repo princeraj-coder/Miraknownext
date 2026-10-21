@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  js/ai-bot.js — Interactive Mira AI Copilot Split Screen Controller
-//  (Microsoft Copilot style split-screen sidebar on right)
+//  js/ai-bot.js — Interactive Mira AI Controller
+//  Supports both Landing Page Character Drawer & Dashboard Copilot Sidebar
 // ─────────────────────────────────────────────────────────────────────────────
 
 const MIRA_PROMPTS = {
@@ -12,7 +12,7 @@ const MIRA_PROMPTS = {
 const MIRA_RESPONSES = {
   brainstorm: `✨ **Here are 3 fresh ideas for your workspace:**\n1. **Focus Sprints:** Batch similar tasks into 45-min distraction-free blocks.\n2. **Unified Hub:** Auto-link your PDF notes directly into student project threads.\n3. **Knowledge Cards:** Convert meeting action items into shareable flash cards.`,
   plan: `📋 **Recommended Plan for Today:**\n• **Morning (9:30 - 11:30 AM):** Review & mark student attendance in Batch A.\n• **Afternoon (1:00 - 2:30 PM):** Upload course notes (PDF) & verify attachments.\n• **Late Afternoon (3:00 PM):** Live academic sync meeting with faculty.`,
-  chat: `👋 **Hi, I'm Mira Copilot!** Your intelligent companion.\n\nI can assist you with:\n• 📊 Organizing student attendance & generating exports\n• 📂 Summarizing, annotating, and indexing uploaded PDFs\n• 🎥 Scheduling live meetings and study syncs\n• 🔒 Routing questions to the KnowNext anonymous community\n\nWhat would you like to tackle right now?`,
+  chat: `👋 **Hi, I'm Mira!** Your intelligent workspace companion.\n\nI can assist you with:\n• 📊 Organizing student attendance & generating exports\n• 📂 Summarizing, annotating, and indexing uploaded PDFs\n• 🎥 Scheduling live meetings and study syncs\n• 🔒 Routing questions to the KnowNext anonymous community\n\nWhat would you like to tackle right now?`,
   default: `I'm here to make your workspace effortless. Click any of the shortcut prompts above, or ask me anything!`
 };
 
@@ -24,40 +24,75 @@ class MiraAiAssistant {
   }
 
   init() {
+    // Dashboard copilot elements
     this.dockBtn = document.getElementById('dock-btn-mira-ai');
     this.sidebar = document.getElementById('mira-copilot-sidebar');
-    this.closeBtn = document.getElementById('copilot-close-btn');
+    this.closeBtn = document.getElementById('copilot-close-btn') || document.getElementById('ai-close-drawer');
     this.newChatBtn = document.getElementById('copilot-new-chat-btn');
-    this.messagesContainer = document.getElementById('copilot-chat-messages');
-    this.inputField = document.getElementById('copilot-input-field');
+    this.messagesContainer = document.getElementById('copilot-chat-messages') || document.getElementById('ai-chat-messages');
+    this.inputField = document.getElementById('copilot-input-field') || document.getElementById('ai-chat-input');
     this.form = document.getElementById('copilot-form');
 
-    // Toggle sidebar on dock button click
+    // Landing page specific elements
+    this.charBtn = document.getElementById('ai-character-button');
+    this.askPill = document.getElementById('ai-ask-pill');
+    this.drawer = document.getElementById('ai-chat-drawer');
+    this.sendBtn = document.getElementById('ai-send-btn');
+
+    // 1. Dashboard Dock Button Toggle
     this.dockBtn?.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       this.toggleSidebar();
     });
 
-    // Close button
-    this.closeBtn?.addEventListener('click', (e) => {
+    // 2. Landing Page Character & Ask Pill Toggle
+    this.charBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
-      this.closeSidebar();
+      this.toggleDrawer();
+    });
+    this.askPill?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleDrawer();
     });
 
-    // New Topic / Clear chat button
+    // 3. Close button
+    this.closeBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.drawer) {
+        this.closeDrawer();
+      } else {
+        this.closeSidebar();
+      }
+    });
+
+    // 4. New Topic / Clear chat button (Dashboard)
     this.newChatBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.clearChat();
     });
 
-    // Handle form submit
+    // 5. Form submit (Dashboard)
     this.form?.addEventListener('submit', (e) => {
       e.preventDefault();
       this.handleFormSubmit(e);
     });
 
-    // Preset action buttons inside copilot chips
+    // 6. Send button & enter key (Landing Page)
+    this.sendBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.handleFormSubmit(e);
+    });
+    this.inputField?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.handleFormSubmit(e);
+      }
+    });
+
+    // 7. Preset prompt chips
     document.querySelectorAll('[data-mira-prompt]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -66,10 +101,19 @@ class MiraAiAssistant {
       });
     });
 
-    // Close when clicking outside on desktop
+    // 8. Outside click dismiss
     document.addEventListener('click', (e) => {
-      if (!this.isOpen || !this.sidebar) return;
+      if (!this.isOpen) return;
+
+      // For landing drawer
+      if (this.drawer && !this.drawer.contains(e.target) && !e.target.closest('#ai-bot-dock') && !e.target.closest('[onclick*="openMiraWith"]')) {
+        this.closeDrawer();
+        return;
+      }
+
+      // For dashboard sidebar
       if (
+        this.sidebar &&
         !this.sidebar.contains(e.target) &&
         (!this.dockBtn || !this.dockBtn.contains(e.target)) &&
         !e.target.closest('#dock-btn-mira-ai') &&
@@ -79,31 +123,19 @@ class MiraAiAssistant {
       }
     });
 
-    // Initial message
+    // Initial bot welcome message
     if (this.messages.length === 0 && this.messagesContainer) {
       this.addBotMessage(MIRA_RESPONSES.chat);
     }
   }
 
+  // Dashboard Sidebar Controls
   toggleSidebar() {
     if (this.isOpen) {
       this.closeSidebar();
     } else {
       this.openSidebar();
     }
-  }
-
-  // Alias for backward compatibility
-  toggleDrawer() {
-    this.toggleSidebar();
-  }
-
-  openDrawer() {
-    this.openSidebar();
-  }
-
-  closeDrawer() {
-    this.closeSidebar();
   }
 
   openSidebar() {
@@ -114,7 +146,6 @@ class MiraAiAssistant {
     if (this.messages.length === 0 && this.messagesContainer) {
       this.addBotMessage(MIRA_RESPONSES.chat);
     }
-
     setTimeout(() => this.inputField?.focus(), 150);
   }
 
@@ -122,6 +153,29 @@ class MiraAiAssistant {
     this.isOpen = false;
     this.sidebar?.classList.remove('open');
     this.dockBtn?.classList.remove('active');
+  }
+
+  // Landing Page Drawer Controls
+  toggleDrawer() {
+    if (this.isOpen) {
+      this.closeDrawer();
+    } else {
+      this.openDrawer();
+    }
+  }
+
+  openDrawer() {
+    this.isOpen = true;
+    this.drawer?.classList.add('open');
+    if (this.messages.length === 0 && this.messagesContainer) {
+      this.addBotMessage(MIRA_RESPONSES.chat);
+    }
+    setTimeout(() => this.inputField?.focus(), 150);
+  }
+
+  closeDrawer() {
+    this.isOpen = false;
+    this.drawer?.classList.remove('open');
   }
 
   clearChat() {
@@ -134,7 +188,14 @@ class MiraAiAssistant {
   }
 
   openWithPrompt(keyOrText) {
-    if (!this.isOpen) this.openSidebar();
+    if (!this.isOpen) {
+      if (this.drawer) {
+        this.openDrawer();
+      } else {
+        this.openSidebar();
+      }
+    }
+
     const promptText = MIRA_PROMPTS[keyOrText] || keyOrText;
     this.addUserMessage(promptText);
 
@@ -161,7 +222,7 @@ class MiraAiAssistant {
     const text = this.inputField?.value.trim();
     if (!text) return;
     this.addUserMessage(text);
-    this.inputField.value = '';
+    if (this.inputField) this.inputField.value = '';
 
     setTimeout(() => {
       const lower = text.toLowerCase();
@@ -186,7 +247,8 @@ class MiraAiAssistant {
   addUserMessage(text) {
     this.messages.push({ sender: 'user', text });
     const msgDiv = document.createElement('div');
-    msgDiv.className = 'copilot-msg-bubble user-msg';
+    // Supports both copilot and landing classes
+    msgDiv.className = this.drawer ? 'ai-msg user-msg' : 'copilot-msg-bubble user-msg';
     msgDiv.textContent = text;
     this.messagesContainer?.appendChild(msgDiv);
     this.scrollToBottom();
@@ -195,7 +257,7 @@ class MiraAiAssistant {
   addBotMessage(markdown) {
     this.messages.push({ sender: 'bot', text: markdown });
     const msgDiv = document.createElement('div');
-    msgDiv.className = 'copilot-msg-bubble bot-msg';
+    msgDiv.className = this.drawer ? 'ai-msg bot-msg' : 'copilot-msg-bubble bot-msg';
 
     // Simple markdown formatting
     let formatted = markdown
@@ -225,7 +287,11 @@ window.openMiraWith = (promptKey) => {
 
 window.toggleMiraCopilot = () => {
   if (window.miraAi) {
-    window.miraAi.toggleSidebar();
+    if (window.miraAi.drawer) {
+      window.miraAi.toggleDrawer();
+    } else {
+      window.miraAi.toggleSidebar();
+    }
   }
 };
 
