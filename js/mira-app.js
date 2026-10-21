@@ -1,3 +1,4 @@
+import { supabase } from './supabase.js';
 // ─────────────────────────────────────────────────────────────────────────────
 //  js/mira-app.js — Core Controller for Mira Workspace & KnowNext Platform
 // ─────────────────────────────────────────────────────────────────────────────
@@ -49,6 +50,11 @@ class MiraApp {
     this.initFocusTimer();
     this.populateFocusTasks();
     this.bindDockFlyoutPanels();
+    this.initSidebarCollapse();
+    this.initGlobalTopBar();
+    this.initUniversalSearch();
+    this.initAuthAndProfile();
+    this.initSyncStatus();
   }
 
   // ── 1. SIDEBAR & VIEW SWITCHING ──
@@ -75,6 +81,22 @@ class MiraApp {
     // If Knownext is requested, open it natively inside the workspace studio
     if (viewName === 'knownext') {
       this.addToolToSplitWorkspace('knownext');
+      return;
+    }
+    if (viewName === 'drive') {
+      this.addToolToSplitWorkspace('drive');
+      return;
+    }
+    if (viewName === 'docs') {
+      this.addToolToSplitWorkspace('docs');
+      return;
+    }
+    if (viewName === 'sheets') {
+      this.addToolToSplitWorkspace('sheets');
+      return;
+    }
+    if (viewName === 'slides') {
+      this.addToolToSplitWorkspace('slides');
       return;
     }
 
@@ -112,6 +134,11 @@ class MiraApp {
     const viewport = document.getElementById('views-viewport');
     if (viewport) viewport.scrollTop = 0;
 
+    // Close Copilot if navigating to Full Mira AI Workspace page
+    if (viewName === 'ai') {
+      window.miraAi?.closeSidebar();
+    }
+
     if (viewName === 'home') {
       this.updateSessionStats();
     } else if (viewName === 'workspace') {
@@ -119,6 +146,49 @@ class MiraApp {
       this.renderSidebarOpenToolsTray();
       this.updateSessionStats();
     }
+  }
+
+  // ── 1B. CONTEXT-AWARE EXTRACTION FOR COPILOT ──
+  getPageContext() {
+    const view = this.currentView;
+    const ctx = {
+      view: view,
+      title: 'Mira Workspace',
+      details: '',
+      tools: []
+    };
+
+    if (view === 'ai') {
+      ctx.title = 'Full Mira AI Platform';
+      ctx.details = 'Full multi-model AI workspace';
+    } else if (view === 'home') {
+      ctx.title = 'Home Dashboard';
+      const pendingCount = this.tasks.filter(t => !t.done).length;
+      ctx.details = `Home workspace. Pending tasks: ${pendingCount}. Focus streak: 3 days. Focus completed: ${this.focusDailyCompleted}/${this.focusDailyTarget}.`;
+    } else if (view === 'workspace') {
+      ctx.title = 'Studio Multi-Window Workspace';
+      ctx.tools = Array.from(this.activeStudioTools);
+      let docSnippet = '';
+      const docPane = document.getElementById('split-pane-docs');
+      if (docPane && docPane.style.display !== 'none') {
+        const text = docPane.innerText.slice(0, 1500).replace(/\s+/g, ' ').trim();
+        docSnippet = ` Open Document Snippet: "${text.slice(0, 400)}..."`;
+      }
+      ctx.details = `Active studio tools: ${ctx.tools.join(', ')}.${docSnippet}`;
+    } else if (view === 'tasks') {
+      ctx.title = 'Tasks & Calendar Board';
+      const taskList = this.tasks.map(t => `${t.title} [${t.priority} priority, ${t.done ? 'Done' : 'Pending'}]`).join('; ');
+      ctx.details = `Tasks on board: ${taskList}`;
+    } else if (view === 'focus') {
+      ctx.title = 'Focus Session Hub';
+      const mins = Math.floor(this.focusRemainingSeconds / 60);
+      ctx.details = `Focus timer: ${mins} minutes remaining. Daily target: ${this.focusDailyCompleted}/${this.focusDailyTarget}.`;
+    } else if (view === 'tools') {
+      ctx.title = 'Tools & Plugins Showcase';
+      ctx.details = 'Overview of integrated tools: Docs, Sheets, Drive, Mail, Slides, Focus, Meet, and KnowNext.';
+    }
+
+    return ctx;
   }
 
   // ── 2. PROJECT / WORKSPACE SELECTOR DROPDOWN ──
@@ -1295,14 +1365,25 @@ class MiraApp {
 
   bindKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-      // Ctrl+K / Cmd+K for Search Panel (Reference Image 2)
+      // Ctrl+K / Cmd+K for Universal Spotlight Search
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        this.toggleDockPanel('search');
+        this.openUniversalSearch();
       }
-      // Escape closes any open modal or dock panel
+      // Ctrl+B for Sidebar toggle
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        this.toggleSidebar();
+      }
+      // Alt+M for Mira AI Assistant
+      if (e.altKey && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        window.miraAi?.toggleSidebar();
+      }
+      // Escape closes any open modal, account menu or dock panel
       if (e.key === 'Escape') {
         document.querySelectorAll('.mira-modal-overlay.open').forEach(m => m.classList.remove('open'));
+        this.closeAccountMenu();
         this.closeDockPanels();
       }
     });
@@ -1363,6 +1444,244 @@ class MiraApp {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  // ── COLLAPSIBLE SIDEBAR DOCK (Expanded & Collapsed) ──
+  initSidebarCollapse() {
+    const saved = localStorage.getItem('mira_sidebar_expanded');
+    const sidebar = document.getElementById('sidebar-dock');
+    if (saved === 'true' && sidebar) {
+      sidebar.classList.add('expanded');
+    }
+  }
+
+  toggleSidebar() {
+    const sidebar = document.getElementById('sidebar-dock');
+    if (!sidebar) return;
+    const isExpanded = sidebar.classList.toggle('expanded');
+    localStorage.setItem('mira_sidebar_expanded', isExpanded ? 'true' : 'false');
+    this.triggerSavedNotification(isExpanded ? 'Sidebar expanded' : 'Sidebar collapsed');
+  }
+
+  // ── GLOBAL TOPBAR & ACCOUNT MENU ──
+  initGlobalTopBar() {
+    document.addEventListener('click', (e) => {
+      const popover = document.getElementById('account-menu-popover');
+      const avatarBtn = document.getElementById('sidebar-avatar-btn') || document.getElementById('topbar-avatar-btn');
+      if (popover && popover.classList.contains('open') && !popover.contains(e.target) && (!avatarBtn || !avatarBtn.contains(e.target))) {
+        popover.classList.remove('open');
+      }
+    });
+  }
+
+  toggleAccountMenu() {
+    const popover = document.getElementById('account-menu-popover');
+    if (popover) {
+      popover.classList.toggle('open');
+    }
+  }
+
+  closeAccountMenu() {
+    const popover = document.getElementById('account-menu-popover');
+    if (popover) {
+      popover.classList.remove('open');
+    }
+  }
+
+  async handleSignOut() {
+    try {
+      await supabase.auth.signOut();
+      this.triggerSavedNotification('Signed out of Mira Workspace');
+      setTimeout(() => {
+        window.location.href = '/index.html';
+      }, 400);
+    } catch (err) {
+      console.warn('Sign out:', err);
+      window.location.href = '/index.html';
+    }
+  }
+
+  async initAuthAndProfile() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        this.currentUser = session.user;
+        const meta = session.user.user_metadata || {};
+        const name = meta.full_name || session.user.email?.split('@')[0] || 'Prince';
+        const initial = name.charAt(0).toUpperCase();
+
+        const greetingHeadline = document.getElementById('home-greeting-headline');
+        if (greetingHeadline) greetingHeadline.textContent = `Good morning, ${name}!`;
+
+        const avatarLetter = document.getElementById('user-avatar-letter');
+        if (avatarLetter) avatarLetter.textContent = initial;
+        const menuAvatar = document.getElementById('menu-avatar-letter');
+        if (menuAvatar) menuAvatar.textContent = initial;
+
+        const menuName = document.getElementById('menu-user-name');
+        if (menuName) menuName.textContent = name;
+        const menuEmail = document.getElementById('menu-user-email');
+        if (menuEmail) menuEmail.textContent = session.user.email || 'prince@knownext.in';
+        const sidebarAvatarName = document.getElementById('sidebar-avatar-name');
+        if (sidebarAvatarName) sidebarAvatarName.textContent = name;
+      }
+    } catch (err) {
+      console.warn('Auth session check offline:', err);
+    }
+  }
+
+  initSyncStatus() {
+    const updateSync = () => {
+      const isOnline = navigator.onLine;
+      const syncTextTop = document.getElementById('sync-status-label-top');
+      if (syncTextTop) syncTextTop.textContent = isOnline ? 'All synced' : 'Offline';
+    };
+    window.addEventListener('online', updateSync);
+    window.addEventListener('offline', updateSync);
+    updateSync();
+  }
+
+  // ── UNIVERSAL SPOTLIGHT SEARCH (Ctrl+K) ──
+  initUniversalSearch() {
+    this.searchFilter = 'all';
+    this.searchIndex = [
+      { type: 'tools', name: 'Mira Drive', sub: 'Cloud file management & storage', action: () => this.addToolToSplitWorkspace('drive'), icon: '📁', color: '#06b6d4' },
+      { type: 'tools', name: 'Mira Docs', sub: 'Collaborative real-time document editor', action: () => this.addToolToSplitWorkspace('docs'), icon: '📄', color: '#60a5fa' },
+      { type: 'tools', name: 'Present / Slides', sub: 'Slide deck and lecture presentation', action: () => this.addToolToSplitWorkspace('slides'), icon: '📽️', color: '#fb923c' },
+      { type: 'tools', name: 'Sheets Studio', sub: 'Tabular computation and attendance analytics', action: () => this.addToolToSplitWorkspace('sheets'), icon: '📊', color: '#34d399' },
+      { type: 'tools', name: 'Plan your day', sub: 'Daily focus schedule and task checklist', action: () => this.switchView('tasks'), icon: '✅', color: '#10b981' },
+      { type: 'tools', name: 'Focus Sessions', sub: 'Windows 11-style Pomodoro timer', action: () => this.switchView('focus'), icon: '⏱️', color: '#eab308' },
+      { type: 'tools', name: 'KnowNext Community', sub: 'Anonymous doubt forum & peer tutoring', action: () => this.addToolToSplitWorkspace('knownext'), icon: '🔒', color: '#a855f7' },
+      { type: 'tools', name: 'Mira AI Copilot', sub: 'Intelligent assistant for planning and summarizing', action: () => window.miraAi?.toggleSidebar(), icon: '✨', color: '#c084fc' },
+      { type: 'docs', name: 'Launch brief — Product strategy', sub: 'Docs · Edited 12 min ago', action: () => this.openRecentDoc('Launch brief'), icon: '📄', color: '#60a5fa' },
+      { type: 'docs', name: 'Fluid_Mechanics_Lecture_04.pdf', sub: 'PDF Notes · 3.4 MB · Yesterday', action: () => this.openRecentDoc('Fluid Mechanics'), icon: '📑', color: '#ef4444' },
+      { type: 'docs', name: 'Linear_Algebra_Assignment_2.pdf', sub: 'Assignment · 1.2 MB · 2d ago', action: () => this.openRecentDoc('Linear Algebra'), icon: '📝', color: '#f59e0b' },
+      { type: 'docs', name: 'Batch A Attendance Summary.xlsx', sub: 'Sheets · 32/38 students present · 3d ago', action: () => this.openRecentDoc('Attendance'), icon: '📊', color: '#10b981' },
+      { type: 'tasks', name: 'Review product roadmap & sprint board', sub: 'High priority · Academic task', action: () => this.switchView('tasks'), icon: '📌', color: '#ef4444' },
+      { type: 'tasks', name: 'Upload lecture notes and PDF handouts', sub: 'Medium priority · Docs task', action: () => this.switchView('tasks'), icon: '📌', color: '#f59e0b' },
+      { type: 'tasks', name: 'Prepare live faculty sync presentation', sub: 'Low priority · Meet task', action: () => this.switchView('tasks'), icon: '📌', color: '#10b981' },
+      { type: 'tasks', name: 'Answer student doubts on KnowNext forum', sub: 'Medium priority · KnowNext task', action: () => this.switchView('tasks'), icon: '📌', color: '#a855f7' },
+      { type: 'community', name: 'TCP vs UDP handshake differences', sub: 'KnowNext Doubt · 1 reply', action: () => this.addToolToSplitWorkspace('knownext'), icon: '❓', color: '#a855f7' },
+      { type: 'community', name: 'Op-Amp differential amplifier CMRR derivation', sub: 'KnowNext Doubt · 2 replies', action: () => this.addToolToSplitWorkspace('knownext'), icon: '❓', color: '#a855f7' }
+    ];
+  }
+
+  openUniversalSearch() {
+    const modal = document.getElementById('modal-universal-search');
+    if (modal) {
+      modal.classList.add('open');
+      const input = document.getElementById('universal-search-dialog-input');
+      if (input) {
+        input.value = '';
+        setTimeout(() => input.focus(), 80);
+      }
+      this.renderUniversalSearchResults('');
+    }
+  }
+
+  closeUniversalSearch() {
+    const modal = document.getElementById('modal-universal-search');
+    if (modal) modal.classList.remove('open');
+  }
+
+  handleUniversalSearchInput(val) {
+    this.renderUniversalSearchResults(val);
+  }
+
+  filterUniversalSearchCategory(cat, btn) {
+    this.searchFilter = cat;
+    document.querySelectorAll('[data-search-filter]').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const input = document.getElementById('universal-search-dialog-input');
+    this.renderUniversalSearchResults(input ? input.value : '');
+  }
+
+  renderUniversalSearchResults(query) {
+    const viewport = document.getElementById('universal-search-results-viewport');
+    if (!viewport) return;
+    const q = (query || '').toLowerCase().trim();
+
+    let filtered = this.searchIndex;
+    if (this.searchFilter !== 'all') {
+      filtered = filtered.filter(item => item.type === this.searchFilter);
+    }
+    if (q) {
+      filtered = filtered.filter(item => item.name.toLowerCase().includes(q) || item.sub.toLowerCase().includes(q));
+    }
+
+    if (filtered.length === 0) {
+      viewport.innerHTML = `
+        <div style="text-align:center; padding: 2.5rem 1rem; color: var(--text-muted);">
+          <div style="font-size: 28px; margin-bottom: 8px;">🔍</div>
+          <div style="font-size: 14px; font-weight: 600; color: #ffffff;">No matching resources found</div>
+          <div style="font-size: 12px; margin-top: 4px;">Try searching for "docs", "sheets", "roadmap", or ask Mira AI.</div>
+          <button type="button" class="btn-hero-primary" style="margin-top: 14px; font-size: 12px; padding: 6px 14px;" onclick="window.miraApp.closeUniversalSearch(); window.openMiraWith('${this.escapeHtml(q)}');">Ask Mira AI Copilot</button>
+        </div>`;
+      return;
+    }
+
+    let html = '';
+    filtered.forEach((item, index) => {
+      html += `
+        <div class="search-result-item" onclick="window.miraApp.executeSearchResult(${index})" tabindex="0">
+          <div class="search-result-item-left">
+            <div class="search-result-icon" style="background: rgba(255,255,255,0.06); color: ${item.color};">
+              ${item.icon}
+            </div>
+            <div>
+              <div class="search-result-name">${this.escapeHtml(item.name)}</div>
+              <div class="search-result-sub">${this.escapeHtml(item.sub)}</div>
+            </div>
+          </div>
+          <span style="font-size: 12px; color: var(--text-muted);">&rarr;</span>
+        </div>`;
+    });
+
+    viewport.innerHTML = html;
+  }
+
+  executeSearchResult(index) {
+    let filtered = this.searchIndex;
+    if (this.searchFilter !== 'all') {
+      filtered = filtered.filter(item => item.type === this.searchFilter);
+    }
+    const input = document.getElementById('universal-search-dialog-input');
+    const q = (input?.value || '').toLowerCase().trim();
+    if (q) {
+      filtered = filtered.filter(item => item.name.toLowerCase().includes(q) || item.sub.toLowerCase().includes(q));
+    }
+    const item = filtered[index];
+    if (item && item.action) {
+      this.closeUniversalSearch();
+      item.action();
+    }
+  }
+
+  openSettings() {
+    this.openModal('modal-settings');
+  }
+
+  createNewDocument() {
+    this.addToolToSplitWorkspace('docs');
+    this.triggerSavedNotification('Created new document: Untitled brief');
+  }
+
+  uploadFileDialog() {
+    this.addToolToSplitWorkspace('drive');
+    this.triggerSavedNotification('Opened Mira Drive for file upload');
+  }
+
+  openNewProjectModal() {
+    this.openModal('modal-add-task');
+  }
+
+  openRecentDoc(name) {
+    if (name.includes('Attendance')) {
+      this.addToolToSplitWorkspace('sheets');
+    } else {
+      this.addToolToSplitWorkspace('docs');
+    }
+    this.triggerSavedNotification(`Opened ${name}`);
   }
 }
 

@@ -1,15 +1,16 @@
 import { defineConfig, loadEnv } from 'vite'
 import { readFileSync, existsSync } from 'fs'
 import { resolve } from 'path'
+import { createAiDevMiddleware } from './server/dev-middleware.js'
 
 export default defineConfig(({ mode }) => {
-  // Load standard Vite env (.env.local)
-  const env = loadEnv(mode, process.cwd(), 'VITE_')
-
-  // Also attempt to load Mira.env.local (user-named file)
-  // Vite only auto-loads .env.* files; we manually merge Mira.env.local here
-  const miraEnvPath = resolve(process.cwd(), 'Mira.env.local', '.vars')
-  const miraEnvFilePath = resolve(process.cwd(), '.env.local')
+  // Load standard Vite env (.env.local) and populate process.env for server middleware
+  const env = loadEnv(mode, process.cwd(), '')
+  for (const key in env) {
+    if (!process.env[key]) {
+      process.env[key] = env[key]
+    }
+  }
 
   return {
     // Serve from project root
@@ -21,6 +22,14 @@ export default defineConfig(({ mode }) => {
       open: true,
       host: true,
     },
+    plugins: [
+      {
+        name: 'vite-ai-api-plugin',
+        configureServer(server) {
+          server.middlewares.use(createAiDevMiddleware())
+        }
+      }
+    ],
     build: {
       outDir: 'dist',
       sourcemap: true,
